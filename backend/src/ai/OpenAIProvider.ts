@@ -26,7 +26,10 @@ export class OpenAIProvider implements AIProvider {
     opts?: { baseUrl?: string; modelMap?: Partial<Record<string, string>> }
   ) {
     this.baseUrl = opts?.baseUrl ?? 'https://api.openai.com/v1';
-    this.modelMap = { ...DEFAULT_MODEL_MAP, ...opts?.modelMap };
+    this.modelMap = { ...DEFAULT_MODEL_MAP };
+    for (const [key, value] of Object.entries(opts?.modelMap ?? {})) {
+      if (value) this.modelMap[key] = value;
+    }
   }
 
   listModels(): ModelInfo[] {

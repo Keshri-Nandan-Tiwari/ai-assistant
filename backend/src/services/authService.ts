@@ -1,4 +1,5 @@
 import { prisma } from '../config/prisma.js';
+import { Prisma } from '@prisma/client';
 import { hashPassword, verifyPassword } from '../utils/password.js';
 import {
   signAccessToken,
@@ -218,7 +219,7 @@ export async function logAudit(
       action,
       ipAddress: meta.ip,
       userAgent: meta.userAgent,
-      metadata: meta.metadata ?? undefined,
+      ...(meta.metadata !== undefined && { metadata: meta.metadata as Prisma.InputJsonValue }),
     },
   });
 }
