@@ -16,7 +16,19 @@ import type { AIProvider, ModelInfo } from './AIProvider.js';
  */
 const registry = new Map<string, AIProvider>();
 
-if (env.OPENAI_API_KEY) registry.set('openai', new OpenAIProvider(env.OPENAI_API_KEY));
+if (env.OPENAI_API_KEY) {
+  registry.set(
+    'openai',
+    new OpenAIProvider(env.OPENAI_API_KEY, {
+      baseUrl: env.OPENAI_BASE_URL,
+      modelMap: {
+        ...(env.OPENAI_MODEL_FAST && { fast: env.OPENAI_MODEL_FAST }),
+        ...(env.OPENAI_MODEL_BALANCED && { balanced: env.OPENAI_MODEL_BALANCED }),
+        ...(env.OPENAI_MODEL_ADVANCED && { advanced: env.OPENAI_MODEL_ADVANCED }),
+      },
+    })
+  );
+}
 if (env.ANTHROPIC_API_KEY) registry.set('anthropic', new AnthropicProvider(env.ANTHROPIC_API_KEY));
 
 function defaultProviderName(): string | null {

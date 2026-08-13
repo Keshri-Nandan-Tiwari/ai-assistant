@@ -31,6 +31,12 @@ const envSchema = z.object({
   AI_PROVIDER: z.enum(['openai', 'anthropic', 'both', 'none']).default('none'),
   OPENAI_API_KEY: z.string().optional(),
   ANTHROPIC_API_KEY: z.string().optional(),
+  // Optional: point the "openai" provider slot at any OpenAI-compatible API
+  // instead of OpenAI itself — e.g. Groq's free tier: https://api.groq.com/openai/v1
+  OPENAI_BASE_URL: z.string().optional(),
+  OPENAI_MODEL_FAST: z.string().optional(),
+  OPENAI_MODEL_BALANCED: z.string().optional(),
+  OPENAI_MODEL_ADVANCED: z.string().optional(),
 
   STORAGE_PROVIDER: z.enum(['local', 's3']).default('local'),
   STORAGE_BUCKET: z.string().optional(),

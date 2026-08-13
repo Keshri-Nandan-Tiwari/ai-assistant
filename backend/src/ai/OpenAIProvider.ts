@@ -7,9 +7,10 @@ const MODELS: ModelInfo[] = [
   { id: 'advanced', label: 'Advanced', description: 'Deeper reasoning and longer context', speed: 'advanced', supportsVision: true, contextWindow: 128000 },
 ];
 
-// Maps our internal model ids to real OpenAI model names.
-// Update these to match whatever models your OpenAI account has access to.
-const MODEL_MAP: Record<string, string> = {
+// Maps our internal model ids to real model names on whichever OpenAI-compatible
+// API is configured. Defaults target OpenAI; override via env vars to point at
+// a free-tier OpenAI-compatible provider instead (e.g. Groq — see .env.example).
+const DEFAULT_MODEL_MAP: Record<string, string> = {
   fast: 'gpt-4o-mini',
   balanced: 'gpt-4o',
   advanced: 'gpt-4o',
@@ -17,7 +18,16 @@ const MODEL_MAP: Record<string, string> = {
 
 export class OpenAIProvider implements AIProvider {
   readonly name = 'openai';
-  constructor(private apiKey: string) {}
+  private baseUrl: string;
+  private modelMap: Record<string, string>;
+
+  constructor(
+    private apiKey: string,
+    opts?: { baseUrl?: string; modelMap?: Partial<Record<string, string>> }
+  ) {
+    this.baseUrl = opts?.baseUrl ?? 'https://api.openai.com/v1';
+    this.modelMap = { ...DEFAULT_MODEL_MAP, ...opts?.modelMap };
+  }
 
   listModels(): ModelInfo[] {
     return MODELS;
@@ -27,9 +37,9 @@ export class OpenAIProvider implements AIProvider {
     messages: ChatMessage[],
     opts: { model: string; signal?: AbortSignal }
   ): AsyncGenerator<StreamChunk> {
-    const model = MODEL_MAP[opts.model] ?? MODEL_MAP.balanced;
+    const model = this.modelMap[opts.model] ?? this.modelMap.balanced;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch(`${this.baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

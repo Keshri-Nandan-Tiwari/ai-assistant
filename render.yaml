@@ -39,11 +39,19 @@ services:
       - key: COOKIE_DOMAIN
         sync: false # leave blank unless using a custom domain
       - key: AI_PROVIDER
-        value: both
+        value: openai
+      - key: OPENAI_BASE_URL
+        value: https://api.groq.com/openai/v1
+      - key: OPENAI_MODEL_FAST
+        value: llama-3.1-8b-instant
+      - key: OPENAI_MODEL_BALANCED
+        value: llama-3.3-70b-versatile
+      - key: OPENAI_MODEL_ADVANCED
+        value: llama-3.3-70b-versatile
       - key: OPENAI_API_KEY
-        sync: false # set in Render dashboard — do not commit real keys
+        sync: false # your free Groq API key goes here (console.groq.com/keys)
       - key: ANTHROPIC_API_KEY
-        sync: false # set in Render dashboard — do not commit real keys
+        sync: false # optional — leave unset if you're not using Anthropic
       - key: MAIL_HOST
         sync: false
       - key: MAIL_PORT
