@@ -1,9 +1,3 @@
-databases:
-  - name: ai-assistant-db
-    plan: free
-    databaseName: ai_assistant
-    user: ai_assistant
-
 services:
   # --- Backend API (Docker, runs Prisma migrations on boot via docker-entrypoint.sh) ---
   - type: web
@@ -19,9 +13,7 @@ services:
       - key: PORT
         value: 4000
       - key: DATABASE_URL
-        fromDatabase:
-          name: ai-assistant-db
-          property: connectionString
+        sync: false # paste your free Neon (neon.tech) Postgres connection string here
       - key: JWT_ACCESS_SECRET
         generateValue: true
       - key: JWT_REFRESH_SECRET
