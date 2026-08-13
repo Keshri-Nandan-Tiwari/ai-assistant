@@ -1,0 +1,254 @@
+// ==========================================================
+// AI Assistant — Database Schema (PostgreSQL, via Prisma)
+// Run `npm run prisma:migrate` after setting DATABASE_URL
+// ==========================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum AccountStatus {
+  ACTIVE
+  DISABLED
+  PENDING_VERIFICATION
+  DELETED
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+model User {
+  id                     String                  @id @default(uuid())
+  email                  String                  @unique
+  username               String                  @unique
+  passwordHash           String?                 @map("password_hash") // null for OAuth-only accounts
+  firstName              String?                 @map("first_name")
+  lastName               String?                 @map("last_name")
+  avatarUrl              String?                 @map("avatar_url")
+  role                    Role                   @default(USER)
+  emailVerified          Boolean                 @default(false) @map("email_verified")
+  accountStatus          AccountStatus           @default(PENDING_VERIFICATION) @map("account_status")
+  failedLoginAttempts    Int                     @default(0) @map("failed_login_attempts")
+  lockedUntil            DateTime?               @map("locked_until")
+  createdAt              DateTime                @default(now()) @map("created_at")
+  updatedAt              DateTime                @updatedAt @map("updated_at")
+  lastLoginAt            DateTime?               @map("last_login_at")
+
+  oauthAccounts          OAuthAccount[]
+  refreshTokens          RefreshToken[]
+  passwordResetTokens    PasswordResetToken[]
+  emailVerificationTokens EmailVerificationToken[]
+  conversations          Conversation[]
+  attachments            Attachment[]
+  settings               UserSettings?
+  usageRecords           UsageRecord[]
+  auditLogs              AuditLog[]
+  knowledgeSources        KnowledgeSource[]
+
+  @@index([email])
+  @@index([username])
+  @@map("users")
+}
+
+model OAuthAccount {
+  id             String   @id @default(uuid())
+  userId         String   @map("user_id")
+  provider       String // "google" | "github"
+  providerUserId String   @map("provider_user_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerUserId])
+  @@index([userId])
+  @@map("oauth_accounts")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  tokenHash String   @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  revoked   Boolean  @default(false)
+  userAgent String?  @map("user_agent")
+  ipAddress String?  @map("ip_address")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@map("refresh_tokens")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  tokenHash String   @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tokenHash])
+  @@map("password_reset_tokens")
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  tokenHash String   @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tokenHash])
+  @@map("email_verification_tokens")
+}
+
+model Conversation {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  title     String   @default("New conversation")
+  model     String   @default("balanced")
+  pinned    Boolean  @default(false)
+  archived  Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages Message[]
+  attachments Attachment[]
+
+  @@index([userId])
+  @@index([userId, updatedAt])
+  @@map("conversations")
+}
+
+model Message {
+  id             String      @id @default(uuid())
+  conversationId String      @map("conversation_id")
+  role           MessageRole
+  content        String
+  model          String?
+  inputTokens    Int?        @map("input_tokens")
+  outputTokens   Int?        @map("output_tokens")
+  createdAt      DateTime    @default(now()) @map("created_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@map("messages")
+}
+
+model Attachment {
+  id             String   @id @default(uuid())
+  userId         String   @map("user_id")
+  conversationId String?  @map("conversation_id")
+  fileName       String   @map("file_name")
+  fileType       String   @map("file_type")
+  fileSize       Int      @map("file_size")
+  storageUrl     String   @map("storage_url")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@map("attachments")
+}
+
+// Knowledge base documents for RAG (Retrieval-Augmented Generation)
+model KnowledgeSource {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  title       String
+  sourceType  String   @map("source_type") // "file" | "url" | "text"
+  sourceUrl   String?  @map("source_url")
+  status      String   @default("pending") // pending | indexed | failed
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user   User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chunks KnowledgeChunk[]
+
+  @@index([userId])
+  @@map("knowledge_sources")
+}
+
+// Embedded chunks used for retrieval (vector column added via raw SQL migration + pgvector)
+model KnowledgeChunk {
+  id                String   @id @default(uuid())
+  knowledgeSourceId String   @map("knowledge_source_id")
+  content           String
+  chunkIndex        Int      @map("chunk_index")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  source KnowledgeSource @relation(fields: [knowledgeSourceId], references: [id], onDelete: Cascade)
+
+  @@index([knowledgeSourceId])
+  @@map("knowledge_chunks")
+}
+
+model UserSettings {
+  id                     String   @id @default(uuid())
+  userId                 String   @unique @map("user_id")
+  theme                  String   @default("system") // light | dark | system
+  accentColor            String   @default("red") @map("accent_color")
+  language               String   @default("en")
+  defaultModel           String   @default("balanced") @map("default_model")
+  notificationPreferences Json    @default("{}") @map("notification_preferences")
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_settings")
+}
+
+model UsageRecord {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  model        String
+  inputTokens  Int      @default(0) @map("input_tokens")
+  outputTokens Int      @default(0) @map("output_tokens")
+  requestCount Int      @default(1) @map("request_count")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("usage_records")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?  @map("user_id")
+  action    String
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([action])
+  @@map("audit_logs")
+}

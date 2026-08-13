@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --accent: #ef4444;
+  --accent-hover: #dc2626;
+  --surface: #ffffff;
+  --surface-raised: #f8f8f8;
+}
+
+.dark {
+  --surface: #0a0a0a;
+  --surface-raised: #171717;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-surface text-neutral-900 dark:text-neutral-100 antialiased;
+}
+
+/* Respect the user's OS-level motion preference — never force animation on people who've opted out */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(128, 128, 128, 0.4);
+  border-radius: 8px;
+}
+
+/* Streaming text caret */
+.stream-caret::after {
+  content: '▍';
+  display: inline-block;
+  margin-left: 2px;
+  animation: pulseGlow 1s steps(2) infinite;
+}
