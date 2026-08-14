@@ -9,6 +9,7 @@ import {
 } from '../utils/tokens.js';
 import { AppError } from '../utils/AppError.js';
 import { sendVerificationEmail, sendPasswordResetEmail } from '../email/mailer.js';
+import { logger } from '../config/logger.js';
 import type { RegisterInput, LoginInput } from '../validation/authSchemas.js';
 
 const MAX_FAILED_ATTEMPTS = 5;
@@ -52,7 +53,15 @@ export async function issueEmailVerification(userId: string, email: string, name
     data: { userId, tokenHash: hashToken(token), expiresAt },
   });
 
-  await sendVerificationEmail(email, name, token);
+  // Email delivery is best-effort: the account and its verification token
+  // are already saved above, so a slow/unreachable SMTP server must never
+  // fail (or hang) the registration request itself. The link is always
+  // recoverable afterwards (server logs, or a future resend endpoint).
+  try {
+    await sendVerificationEmail(email, name, token);
+  } catch (err) {
+    logger.error({ err, email }, 'Failed to send verification email');
+  }
 }
 
 export async function verifyEmail(rawToken: string) {
@@ -184,7 +193,13 @@ export async function requestPasswordReset(email: string) {
     data: { userId: user.id, tokenHash: hashToken(token), expiresAt },
   });
 
-  await sendPasswordResetEmail(user.email, user.firstName ?? user.username, token);
+  // Same reasoning as registration: never let SMTP trouble break the request.
+  try {
+    await sendPasswordResetEmail(user.email, user.firstName ?? user.username, token);
+  } catch (err) {
+    logger.error({ err, email: user.email }, 'Failed to send password reset email');
+  }
+
   await logAudit(user.id, 'PASSWORD_RESET_REQUESTED', {});
 }
 

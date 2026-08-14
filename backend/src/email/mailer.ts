@@ -10,6 +10,10 @@ const transporter = isConfigured
       port: env.MAIL_PORT ?? 587,
       secure: env.MAIL_PORT === 465,
       auth: { user: env.MAIL_USERNAME, pass: env.MAIL_PASSWORD },
+      // Fail fast rather than hanging the request that triggered the email.
+      connectionTimeout: 8000,
+      greetingTimeout: 8000,
+      socketTimeout: 8000,
     })
   : null;
 
