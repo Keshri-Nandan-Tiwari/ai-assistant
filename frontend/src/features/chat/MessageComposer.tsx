@@ -1,16 +1,20 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
-import { Send, Square, Paperclip, Mic, MicOff, ChevronDown } from 'lucide-react';
+import { Send, Square, Paperclip, Mic, MicOff, ChevronDown, Volume2, VolumeX } from 'lucide-react';
 
 interface Props {
   onSend: (text: string) => void;
   onStop: () => void;
   isStreaming: boolean;
   disabled?: boolean;
+  voiceReplyEnabled: boolean;
+  onToggleVoiceReply: () => void;
+  voiceLang: string;
+  onVoiceLangChange: (lang: string) => void;
 }
 
 // A practical set covering all major Indian languages plus common foreign
-// ones. BCP-47 codes are what the browser's speech recognition expects.
-const VOICE_LANGUAGES = [
+// ones. BCP-47 codes are what the browser's speech APIs expect.
+export const VOICE_LANGUAGES = [
   { code: 'en-IN', label: 'English (India)' },
   { code: 'en-US', label: 'English (US)' },
   { code: 'hi-IN', label: 'Hindi' },
@@ -33,7 +37,6 @@ const VOICE_LANGUAGES = [
   { code: 'ru-RU', label: 'Russian' },
 ];
 
-// Minimal shape of the Web Speech API we actually use — not in standard TS lib types.
 interface SpeechRecognitionLike extends EventTarget {
   lang: string;
   continuous: boolean;
@@ -50,14 +53,23 @@ function getSpeechRecognition(): (new () => SpeechRecognitionLike) | null {
   return (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition || null;
 }
 
-export default function MessageComposer({ onSend, onStop, isStreaming, disabled }: Props) {
+export default function MessageComposer({
+  onSend,
+  onStop,
+  isStreaming,
+  disabled,
+  voiceReplyEnabled,
+  onToggleVoiceReply,
+  voiceLang,
+  onVoiceLangChange,
+}: Props) {
   const [text, setText] = useState('');
   const [listening, setListening] = useState(false);
-  const [voiceLang, setVoiceLang] = useState('en-IN');
   const [showLangPicker, setShowLangPicker] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const baseTextRef = useRef('');
+  const finalTranscriptRef = useRef('');
 
   const SpeechRecognitionCtor = getSpeechRecognition();
   const voiceSupported = !!SpeechRecognitionCtor;
@@ -68,10 +80,12 @@ export default function MessageComposer({ onSend, onStop, isStreaming, disabled 
     };
   }, []);
 
-  function handleSend() {
-    if (!text.trim() || isStreaming) return;
-    onSend(text.trim());
+  function handleSend(overrideText?: string) {
+    const value = (overrideText ?? text).trim();
+    if (!value || isStreaming) return;
+    onSend(value);
     setText('');
+    finalTranscriptRef.current = '';
     if (textareaRef.current) textareaRef.current.style.height = 'auto';
   }
 
@@ -99,16 +113,27 @@ export default function MessageComposer({ onSend, onStop, isStreaming, disabled 
     recognition.continuous = true;
     recognition.interimResults = true;
     baseTextRef.current = text ? text + ' ' : '';
+    finalTranscriptRef.current = '';
 
     recognition.onresult = (event: any) => {
-      let transcript = '';
+      let finalText = '';
+      let interim = '';
       for (let i = 0; i < event.results.length; i++) {
-        transcript += event.results[i][0].transcript;
+        const chunk = event.results[i][0].transcript;
+        if (event.results[i].isFinal) finalText += chunk;
+        else interim += chunk;
       }
-      setText(baseTextRef.current + transcript);
+      finalTranscriptRef.current = finalText;
+      setText(baseTextRef.current + finalText + interim);
     };
     recognition.onerror = () => setListening(false);
-    recognition.onend = () => setListening(false);
+    recognition.onend = () => {
+      setListening(false);
+      // Voice-chat flow: once speech ends (silence detected by the browser),
+      // send automatically — no separate tap needed, like a real voice call.
+      const spoken = (baseTextRef.current + finalTranscriptRef.current).trim();
+      if (spoken) handleSend(spoken);
+    };
 
     recognitionRef.current = recognition;
     recognition.start();
@@ -121,7 +146,21 @@ export default function MessageComposer({ onSend, onStop, isStreaming, disabled 
     <div className="border-t border-neutral-200 dark:border-neutral-800 bg-surface p-3 md:p-4">
       <div className="max-w-3xl mx-auto">
         {voiceSupported && (
-          <div className="relative mb-1.5 flex justify-end">
+          <div className="relative mb-1.5 flex items-center justify-end gap-3">
+            <button
+              type="button"
+              onClick={onToggleVoiceReply}
+              title={voiceReplyEnabled ? 'Keshri will speak replies aloud — tap to mute' : 'Tap so Keshri speaks replies aloud'}
+              className={`flex items-center gap-1 text-xs px-2 py-1 rounded-full ${
+                voiceReplyEnabled
+                  ? 'text-accent bg-accent/10'
+                  : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200'
+              }`}
+            >
+              {voiceReplyEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />}
+              {voiceReplyEnabled ? 'Voice replies on' : 'Voice replies off'}
+            </button>
+
             <button
               type="button"
               onClick={() => setShowLangPicker((s) => !s)}
@@ -137,7 +176,7 @@ export default function MessageComposer({ onSend, onStop, isStreaming, disabled 
                     key={l.code}
                     type="button"
                     onClick={() => {
-                      setVoiceLang(l.code);
+                      onVoiceLangChange(l.code);
                       setShowLangPicker(false);
                     }}
                     className={`block w-full text-left px-3 py-1.5 text-xs hover:bg-neutral-100 dark:hover:bg-neutral-800 ${
@@ -171,7 +210,7 @@ export default function MessageComposer({ onSend, onStop, isStreaming, disabled 
               e.target.style.height = `${Math.min(e.target.scrollHeight, 160)}px`;
             }}
             onKeyDown={handleKeyDown}
-            placeholder={listening ? 'Listening…' : 'Ask anything…'}
+            placeholder={listening ? 'Listening… speak now' : 'Ask anything…'}
             rows={1}
             className="flex-1 resize-none bg-transparent outline-none text-sm py-1.5 max-h-40"
           />
@@ -183,8 +222,8 @@ export default function MessageComposer({ onSend, onStop, isStreaming, disabled 
             title={
               voiceSupported
                 ? listening
-                  ? 'Stop listening'
-                  : `Voice input (${currentLangLabel})`
+                  ? 'Stop and send'
+                  : `Talk to Keshri (${currentLangLabel})`
                 : 'Voice input not supported in this browser'
             }
             className={`p-1.5 shrink-0 rounded-full transition-colors ${
@@ -206,7 +245,7 @@ export default function MessageComposer({ onSend, onStop, isStreaming, disabled 
             </button>
           ) : (
             <button
-              onClick={handleSend}
+              onClick={() => handleSend()}
               disabled={!text.trim() || disabled}
               className="shrink-0 rounded-full bg-accent hover:bg-accent-hover text-white p-2 disabled:opacity-40 transition-colors"
               title="Send (Enter)"
@@ -217,7 +256,7 @@ export default function MessageComposer({ onSend, onStop, isStreaming, disabled 
         </div>
       </div>
       <p className="text-center text-[11px] text-neutral-400 mt-2">
-        AI can make mistakes. Consider checking important information.
+        {listening ? 'Listening — stop talking to send automatically.' : 'AI can make mistakes. Consider checking important information.'}
       </p>
     </div>
   );

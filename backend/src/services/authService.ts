@@ -8,7 +8,7 @@ import {
   refreshTokenExpiry,
 } from '../utils/tokens.js';
 import { AppError } from '../utils/AppError.js';
-import { sendVerificationEmail, sendPasswordResetEmail } from '../email/mailer.js';
+import { sendVerificationEmail, sendPasswordResetEmail, sendWelcomeEmail } from '../email/mailer.js';
 import { logger } from '../config/logger.js';
 import type { RegisterInput, LoginInput } from '../validation/authSchemas.js';
 
@@ -44,6 +44,15 @@ export async function registerUser(input: RegisterInput) {
       settings: { create: {} },
     },
   });
+
+  // Welcome email is purely informational — never let it block or fail
+  // account creation (same reasoning as elsewhere: SMTP hiccups shouldn't
+  // break the request that already succeeded).
+  try {
+    await sendWelcomeEmail(user.email, user.firstName ?? user.username);
+  } catch (err) {
+    logger.error({ err, email: user.email }, 'Failed to send welcome email');
+  }
 
   return user;
 }

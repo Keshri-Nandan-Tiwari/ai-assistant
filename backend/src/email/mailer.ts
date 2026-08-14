@@ -50,3 +50,11 @@ export async function sendPasswordResetEmail(to: string, name: string, token: st
     link
   );
 }
+
+export async function sendWelcomeEmail(to: string, name: string) {
+  return send(
+    to,
+    `Welcome, ${name}!`,
+    `<p>Hi ${name},</p><p>Your account on <strong>Keshri</strong> has just been created with this email address (${to}). You're all set — you can log in and start chatting right away.</p><p>If you didn't create this account, you can safely ignore this email.</p><p><a href="${env.APP_URL}">${env.APP_URL}</a></p>`
+  );
+}

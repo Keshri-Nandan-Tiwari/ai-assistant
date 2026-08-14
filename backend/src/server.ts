@@ -6,7 +6,7 @@ import { prisma } from './config/prisma.js';
 const app = createApp();
 
 const server = app.listen(env.PORT, () => {
-  logger.info(`🚀 AI Assistant API listening on port ${env.PORT} [${env.NODE_ENV}]`);
+  logger.info(`🚀 Keshri API listening on port ${env.PORT} [${env.NODE_ENV}]`);
   if (env.AI_PROVIDER === 'none') {
     logger.warn('AI_PROVIDER is not set — chat requests will return a configuration error until you set it.');
   }
