@@ -13,13 +13,13 @@ const transporter = isConfigured
     })
   : null;
 
-async function send(to: string, subject: string, html: string) {
+async function send(to: string, subject: string, html: string, devLink?: string) {
   if (!transporter) {
     // No SMTP configured — log instead of pretending the email sent.
     // This is intentional: we never fake a successful send.
     logger.warn(
-      { to, subject },
-      'MAIL_HOST not configured — email NOT sent. Set MAIL_HOST/MAIL_USERNAME/MAIL_PASSWORD in .env to enable real email delivery.'
+      { to, subject, link: devLink },
+      'MAIL_HOST not configured — email NOT sent. Link logged below for manual use. Set MAIL_HOST/MAIL_USERNAME/MAIL_PASSWORD in .env to enable real email delivery.'
     );
     return { sent: false as const };
   }
@@ -32,7 +32,8 @@ export async function sendVerificationEmail(to: string, name: string, token: str
   return send(
     to,
     'Verify your email address',
-    `<p>Hi ${name},</p><p>Please verify your email by clicking the link below. This link expires in 24 hours.</p><p><a href="${link}">${link}</a></p>`
+    `<p>Hi ${name},</p><p>Please verify your email by clicking the link below. This link expires in 24 hours.</p><p><a href="${link}">${link}</a></p>`,
+    link
   );
 }
 
@@ -41,6 +42,7 @@ export async function sendPasswordResetEmail(to: string, name: string, token: st
   return send(
     to,
     'Reset your password',
-    `<p>Hi ${name},</p><p>We received a request to reset your password. This link expires in 1 hour and can only be used once. If you didn't request this, you can safely ignore this email.</p><p><a href="${link}">${link}</a></p>`
+    `<p>Hi ${name},</p><p>We received a request to reset your password. This link expires in 1 hour and can only be used once. If you didn't request this, you can safely ignore this email.</p><p><a href="${link}">${link}</a></p>`,
+    link
   );
 }
