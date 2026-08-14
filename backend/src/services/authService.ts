@@ -28,6 +28,10 @@ export async function registerUser(input: RegisterInput) {
 
   const passwordHash = await hashPassword(input.password);
 
+  // Accounts are active immediately — no email verification gate.
+  // (Real email delivery isn't reliably configured, and forcing every new
+  // user to wait on an email step just to log in was more fragile than
+  // it was worth for this app.)
   const user = await prisma.user.create({
     data: {
       email: input.email,
@@ -35,12 +39,11 @@ export async function registerUser(input: RegisterInput) {
       passwordHash,
       firstName: input.firstName,
       lastName: input.lastName,
-      accountStatus: 'PENDING_VERIFICATION',
+      accountStatus: 'ACTIVE',
+      emailVerified: true,
       settings: { create: {} },
     },
   });
-
-  await issueEmailVerification(user.id, user.email, user.firstName ?? user.username);
 
   return user;
 }

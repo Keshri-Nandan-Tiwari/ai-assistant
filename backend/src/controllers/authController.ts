@@ -29,10 +29,17 @@ function toDto(user: { id: string; email: string; username: string; firstName: s
 export const register = asyncHandler(async (req: AuthedRequest, res: Response) => {
   const input = registerSchema.parse(req.body);
   const user = await authService.registerUser(input);
+
+  // Accounts are active immediately, so log the person straight in —
+  // no separate "verify then log in" step to get stuck on.
+  const meta = { ip: req.ip, userAgent: req.headers['user-agent'] };
+  const { accessToken, refreshToken } = await authService.issueTokenPair(user.id, user.role, meta);
+  setAuthCookies(res, accessToken, refreshToken);
+
   res.status(201).json({
     success: true,
     data: { user: toDto(user) },
-    message: 'Account created. Please check your email to verify your address.',
+    message: 'Account created',
   });
 });
 

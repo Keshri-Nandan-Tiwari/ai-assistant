@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Loader2, Check, X } from 'lucide-react';
 import { api, ApiError } from '../../api/client';
+import { useAuthStore } from '../../stores/authStore';
 
 function strength(pw: string) {
   const checks = [
@@ -14,12 +15,13 @@ function strength(pw: string) {
 }
 
 export default function RegisterPage() {
+  const navigate = useNavigate();
+  const setUser = useAuthStore((s) => s.setUser);
   const [form, setForm] = useState({ firstName: '', lastName: '', username: '', email: '', password: '', confirm: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [done, setDone] = useState(false);
 
   const { checks, score } = strength(form.password);
   const barColors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-green-500'];
@@ -39,7 +41,7 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      await api.post('/api/auth/register', {
+      const res = await api.post<{ data: { user: any } }>('/api/auth/register', {
         firstName: form.firstName,
         lastName: form.lastName,
         username: form.username,
@@ -47,26 +49,13 @@ export default function RegisterPage() {
         password: form.password,
         acceptedTerms: true,
       });
-      setDone(true);
+      setUser(res.data.user);
+      navigate('/chat');
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
-  }
-
-  if (done) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-surface px-4">
-        <div className="max-w-sm text-center animate-fadeIn">
-          <h1 className="text-2xl font-semibold mb-2">Check your email</h1>
-          <p className="text-neutral-500 text-sm mb-6">
-            We sent a verification link to <span className="font-medium">{form.email}</span>. Click it to activate your account.
-          </p>
-          <Link to="/login" className="text-accent hover:underline text-sm">Back to login</Link>
-        </div>
-      </div>
-    );
   }
 
   return (

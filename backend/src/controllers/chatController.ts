@@ -27,7 +27,7 @@ function resolveProvider(modelField: string) {
 }
 
 const SYSTEM_PROMPT =
-  'You are a helpful, precise AI assistant. Format responses in Markdown when helpful (code blocks, lists, tables). Be concise unless asked for depth.';
+  'You are a helpful, precise AI assistant. Respond in the same language the user writes in — English, Hindi, or any other language, including regional Indian languages. Format responses in Markdown when helpful (code blocks, lists, tables). Be concise unless asked for depth.';
 
 /**
  * POST /api/chat  — streams the AI response back as Server-Sent Events.
