@@ -1,18 +1,29 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { api, ApiError } from '../../api/client';
 import { useAuthStore } from '../../stores/authStore';
 import OAuthButtons from './OAuthButtons';
 
+const OAUTH_ERROR_MESSAGES: Record<string, string> = {
+  google_not_configured: 'Google login isn\'t set up on this server yet.',
+  google_failed: 'Google login failed — please try again.',
+  github_not_configured: 'GitHub login isn\'t set up on this server yet.',
+  github_failed: 'GitHub login failed — please try again.',
+};
+
 export default function LoginPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const setUser = useAuthStore((s) => s.setUser);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const oauthErrorCode = searchParams.get('error');
+  const [error, setError] = useState<string | null>(
+    oauthErrorCode ? (OAUTH_ERROR_MESSAGES[oauthErrorCode] ?? 'Login failed — please try again.') : null
+  );
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
