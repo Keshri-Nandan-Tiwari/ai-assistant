@@ -44,13 +44,13 @@ export default function ChatMessage({ message }: { message: ChatMessageData }) {
   return (
     <div className={`flex gap-3 py-4 ${isUser ? 'justify-end' : 'justify-start'} animate-slideUp`}>
       {!isUser && (
-        <div className="w-7 h-7 rounded-full bg-accent/10 text-accent flex items-center justify-center shrink-0">
+        <div className="w-7 h-7 rounded-full bg-accent/10 text-accent flex items-center justify-center shrink-0 glow-accent">
           <Sparkles size={14} />
         </div>
       )}
       <div
-        className={`max-w-[80%] md:max-w-[70%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
-          isUser ? 'bg-accent text-white' : 'bg-surface-raised'
+        className={`max-w-[80%] md:max-w-[70%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed transition-all ${
+          isUser ? 'bg-accent text-white glow-accent' : 'glass-card'
         } ${message.streaming ? 'stream-caret' : ''}`}
       >
         {isUser ? (

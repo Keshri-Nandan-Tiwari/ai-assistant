@@ -217,7 +217,7 @@ export default function MessageComposer({
   const currentLangLabel = VOICE_LANGUAGES.find((l) => l.code === voiceLang)?.label ?? voiceLang;
 
   return (
-    <div className="border-t border-neutral-200 dark:border-neutral-800 bg-surface p-3 md:p-4">
+    <div className="border-t border-neutral-200 dark:border-white/5 bg-surface p-3 md:p-4">
       <div className="max-w-3xl mx-auto">
         {attachments.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-2">
@@ -292,7 +292,7 @@ export default function MessageComposer({
           </div>
         )}
 
-        <div className="flex items-end gap-2 rounded-2xl border border-neutral-300 dark:border-neutral-700 bg-surface-raised px-3 py-2 focus-within:ring-2 focus-within:ring-accent">
+        <div className="flex items-end gap-2 rounded-2xl glass-card px-3 py-2 focus-within:ring-2 focus-within:ring-accent/60 focus-within:glow-accent transition-shadow">
           <input
             ref={fileInputRef}
             type="file"
@@ -357,7 +357,7 @@ export default function MessageComposer({
             <button
               onClick={() => handleSend()}
               disabled={!text.trim() || disabled}
-              className="shrink-0 rounded-full bg-accent hover:bg-accent-hover text-white p-2 disabled:opacity-40 transition-colors"
+              className="shrink-0 rounded-full bg-accent hover:bg-accent-hover text-white p-2 disabled:opacity-40 transition-all glow-accent"
               title="Send (Enter)"
             >
               <Send size={16} />

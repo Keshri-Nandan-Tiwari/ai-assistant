@@ -104,7 +104,7 @@ export default function ChatPage() {
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="flex items-center gap-2 px-3 py-2.5 border-b border-neutral-200 dark:border-neutral-800">
+        <header className="flex items-center gap-2 px-3 py-2.5 border-b border-neutral-200 dark:border-white/5 glass-card">
           <button onClick={() => setSidebarOpen(true)} className="md:hidden p-1.5 text-neutral-500">
             <Menu size={20} />
           </button>
@@ -115,7 +115,7 @@ export default function ChatPage() {
           <div className="max-w-3xl mx-auto">
             {messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-[60vh] text-center px-4">
-                <div className="w-12 h-12 rounded-2xl bg-accent/10 text-accent flex items-center justify-center mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-accent/10 text-accent flex items-center justify-center mb-4 glow-accent">
                   <Sparkles size={22} />
                 </div>
                 <h2 className="text-xl font-semibold mb-1">Hi, I'm Keshri. How can I help you today?</h2>
@@ -125,7 +125,7 @@ export default function ChatPage() {
                     <button
                       key={s}
                       onClick={() => handleSend(s)}
-                      className="text-left text-sm px-3 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 hover:bg-surface-raised transition-colors"
+                      className="text-left text-sm px-3 py-2.5 rounded-xl glass-card hover:border-accent/40 hover:bg-accent/5 transition-all"
                     >
                       {s}
                     </button>

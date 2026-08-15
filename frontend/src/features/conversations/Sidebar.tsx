@@ -16,16 +16,16 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
     <>
       {open && <div className="fixed inset-0 bg-black/40 z-30 md:hidden" onClick={onClose} />}
       <aside
-        className={`fixed md:static z-40 top-0 left-0 h-full w-72 shrink-0 border-r border-neutral-200 dark:border-neutral-800 bg-surface flex flex-col transition-transform duration-200 ${
+        className={`fixed md:static z-40 top-0 left-0 h-full w-72 shrink-0 border-r border-neutral-200 dark:border-white/5 glass-card flex flex-col transition-transform duration-200 ${
           open ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         }`}
       >
         <div className="p-3 flex items-center justify-between">
           <button
             onClick={() => navigate('/chat')}
-            className="flex-1 flex items-center gap-2 rounded-lg border border-neutral-200 dark:border-neutral-800 px-3 py-2 text-sm hover:bg-surface-raised transition-colors"
+            className="flex-1 flex items-center gap-2 rounded-xl border border-neutral-200 dark:border-white/10 px-3 py-2 text-sm hover:border-accent/40 hover:bg-accent/5 transition-all"
           >
-            <Plus size={16} /> New chat
+            <Plus size={16} className="text-accent" /> New chat
           </button>
           <button onClick={onClose} className="md:hidden ml-2 p-2 text-neutral-400">
             <X size={18} />
@@ -50,8 +50,8 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
               <Link
                 to={`/chat/${c.id}`}
                 onClick={onClose}
-                className={`flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-sm truncate transition-colors ${
-                  activeId === c.id ? 'bg-surface-raised' : 'hover:bg-surface-raised'
+                className={`flex items-center gap-1.5 px-2.5 py-2 rounded-xl text-sm truncate transition-all ${
+                  activeId === c.id ? 'bg-accent/10 text-accent dark:text-red-300' : 'hover:bg-surface-raised'
                 }`}
               >
                 {c.pinned && <Pin size={11} className="shrink-0 text-accent" />}

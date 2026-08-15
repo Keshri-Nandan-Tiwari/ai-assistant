@@ -19,28 +19,28 @@ export default function LandingPage() {
 
       <header className="flex items-center justify-between max-w-6xl mx-auto px-6 py-5">
         <div className="flex items-center gap-2 font-semibold">
-          <Sparkles className="text-accent" size={20} /> Assistant
+          <Sparkles className="text-accent" size={20} /> Keshri
         </div>
         <div className="flex items-center gap-3 text-sm">
-          <Link to="/login" className="px-3 py-1.5 hover:text-accent">Log in</Link>
-          <Link to="/register" className="px-3.5 py-1.5 rounded-lg bg-accent text-white hover:bg-accent-hover">Sign up</Link>
+          <Link to="/login" className="px-3 py-1.5 hover:text-accent transition-colors">Log in</Link>
+          <Link to="/register" className="px-3.5 py-1.5 rounded-lg bg-accent text-white hover:bg-accent-hover glow-accent transition-all">Sign up</Link>
         </div>
       </header>
 
       <section className="max-w-3xl mx-auto text-center px-6 pt-16 pb-20 animate-fadeIn">
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
-          Your intelligent workspace.
+          Meet Keshri.
           <br />
           <span className="text-accent">Ask. Create. Analyze. Build.</span>
         </h1>
         <p className="text-neutral-500 max-w-xl mx-auto mb-8">
-          A fast, secure AI assistant that understands your context, speaks your language, and gets things done.
+          A fast, secure AI assistant that understands your context, speaks your language, listens to your voice, and gets things done.
         </p>
         <div className="flex items-center justify-center gap-3">
-          <Link to="/register" className="px-5 py-2.5 rounded-lg bg-accent text-white font-medium hover:bg-accent-hover">
+          <Link to="/register" className="px-5 py-2.5 rounded-lg bg-accent text-white font-medium hover:bg-accent-hover glow-accent transition-all">
             Get started free
           </Link>
-          <Link to="/login" className="px-5 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-700 hover:bg-surface-raised">
+          <Link to="/login" className="px-5 py-2.5 rounded-lg glass-card hover:border-accent/40 transition-colors">
             Log in
           </Link>
         </div>
@@ -50,7 +50,7 @@ export default function LandingPage() {
         {FEATURES.map(({ icon: Icon, title, desc }) => (
           <div
             key={title}
-            className="p-5 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-surface-raised/50 backdrop-blur-sm hover:border-accent/40 transition-colors"
+            className="p-5 rounded-2xl glass-card hover:border-accent/40 hover:glow-accent transition-all"
           >
             <Icon className="text-accent mb-3" size={22} />
             <h3 className="font-semibold mb-1">{title}</h3>
@@ -59,8 +59,8 @@ export default function LandingPage() {
         ))}
       </section>
 
-      <footer className="border-t border-neutral-200 dark:border-neutral-800 py-8 text-center text-xs text-neutral-400">
-        © {new Date().getFullYear()} Assistant. All rights reserved.
+      <footer className="border-t border-neutral-200 dark:border-white/5 py-8 text-center text-xs text-neutral-400">
+        © {new Date().getFullYear()} Keshri. All rights reserved.
       </footer>
     </div>
   );
