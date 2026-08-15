@@ -51,5 +51,3 @@ export const api = {
     return body as T;
   },
 };
-
-export { API_URL };
