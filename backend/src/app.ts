@@ -17,6 +17,7 @@ import chatRoutes from './routes/chatRoutes.js';
 import attachmentRoutes from './routes/attachmentRoutes.js';
 import profileRoutes from './routes/profileRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
+import contactRoutes from './routes/contactRoutes.js';
 
 export function createApp() {
   const app = express();
@@ -68,6 +69,7 @@ export function createApp() {
   app.use('/api/attachments', attachmentRoutes);
   app.use('/api/profile', profileRoutes);
   app.use('/api/admin', adminRoutes);
+  app.use('/api/contact', contactRoutes);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

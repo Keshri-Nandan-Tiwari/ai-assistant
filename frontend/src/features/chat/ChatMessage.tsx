@@ -51,10 +51,16 @@ export default function ChatMessage({ message }: { message: ChatMessageData }) {
       <div
         className={`max-w-[80%] md:max-w-[70%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed transition-all ${
           isUser ? 'bg-accent text-white glow-accent' : 'glass-card'
-        } ${message.streaming ? 'stream-caret' : ''}`}
+        } ${message.streaming && message.content ? 'stream-caret' : ''}`}
       >
         {isUser ? (
           <p className="whitespace-pre-wrap">{message.content}</p>
+        ) : message.streaming && !message.content ? (
+          <div className="typing-dots text-accent">
+            <span />
+            <span />
+            <span />
+          </div>
         ) : (
           <div className="prose prose-sm dark:prose-invert max-w-none prose-p:my-1.5 prose-pre:p-0 prose-pre:bg-transparent">
             <ReactMarkdown

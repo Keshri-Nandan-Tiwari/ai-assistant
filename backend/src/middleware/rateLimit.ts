@@ -40,6 +40,12 @@ export const aiChatLimiter = rateLimit({
   handler: jsonHandler('You are sending messages too quickly. Please slow down.'),
 });
 
+export const contactFormLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 5,
+  handler: jsonHandler('Too many messages sent. Please try again later.'),
+});
+
 export const globalApiLimiter = rateLimit({
   windowMs: 60 * 1000,
   limit: 120,

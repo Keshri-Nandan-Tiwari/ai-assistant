@@ -58,3 +58,13 @@ export async function sendWelcomeEmail(to: string, name: string) {
     `<p>Hi ${name},</p><p>Your account on <strong>Keshri</strong> has just been created with this email address (${to}). You're all set — you can log in and start chatting right away.</p><p>If you didn't create this account, you can safely ignore this email.</p><p><a href="${env.APP_URL}">${env.APP_URL}</a></p>`
   );
 }
+
+// Site owner's inbox for the public "Contact" form on the landing page —
+// separate from any user's own email, this always goes to the developer.
+export async function sendContactFormEmail(fromName: string, fromEmail: string, message: string) {
+  return send(
+    'keshrinandantiwari08@gmail.com',
+    `New message from ${fromName} (Keshri contact form)`,
+    `<p><strong>From:</strong> ${fromName} (${fromEmail})</p><p><strong>Message:</strong></p><p>${message.replace(/\n/g, '<br>')}</p>`
+  );
+}

@@ -1,5 +1,14 @@
 import { Link } from 'react-router-dom';
 import { Sparkles, Zap, ShieldCheck, Globe2, MessageSquare } from 'lucide-react';
+import Typewriter from '../components/Typewriter';
+import ContactSection from '../components/ContactSection';
+
+const TAGLINES = [
+  'Ask anything, get instant answers.',
+  'Chat by voice, in your own language.',
+  'Upload a file — Keshri reads it.',
+  'Fast. Secure. Always available.',
+];
 
 const FEATURES = [
   { icon: MessageSquare, title: 'Natural conversation', desc: 'Streaming answers, markdown, code, and memory of your chat history.' },
@@ -31,7 +40,9 @@ export default function LandingPage() {
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
           Meet Keshri.
           <br />
-          <span className="text-accent">Ask. Create. Analyze. Build.</span>
+          <span className="text-accent block min-h-[1.2em]">
+            <Typewriter phrases={TAGLINES} />
+          </span>
         </h1>
         <p className="text-neutral-500 max-w-xl mx-auto mb-8">
           A fast, secure AI assistant that understands your context, speaks your language, listens to your voice, and gets things done.
@@ -58,6 +69,8 @@ export default function LandingPage() {
           </div>
         ))}
       </section>
+
+      <ContactSection />
 
       <footer className="border-t border-neutral-200 dark:border-white/5 py-8 text-center text-xs text-neutral-400">
         © {new Date().getFullYear()} Keshri. All rights reserved.
