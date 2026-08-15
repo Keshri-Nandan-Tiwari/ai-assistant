@@ -35,7 +35,8 @@ body {
 
 /* Subtle glassmorphism card used for the sidebar, message bubbles, composer, etc. */
 .glass-card {
-  @apply bg-surface-raised/80 backdrop-blur-xl border border-neutral-200/60 dark:border-white/5;
+  @apply bg-surface-raised backdrop-blur-xl border border-neutral-200/60 dark:border-white/5;
+  opacity: 0.97;
 }
 
 /* A soft, low-key glow used behind key accent elements (buttons, active states) — 
