@@ -65,6 +65,7 @@ export default function MessageComposer({
 }: Props) {
   const [text, setText] = useState('');
   const [listening, setListening] = useState(false);
+  const [voiceError, setVoiceError] = useState<string | null>(null);
   const [showLangPicker, setShowLangPicker] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
@@ -108,14 +109,20 @@ export default function MessageComposer({
       return;
     }
 
+    setVoiceError(null);
     const recognition = new SpeechRecognitionCtor();
     recognition.lang = voiceLang;
-    recognition.continuous = true;
+    // continuous=true is unreliable on Android Chrome (stops unpredictably
+    // early or hangs open) — a single-utterance capture per tap is far more
+    // consistent, and the browser's own silence detection is still what
+    // ends it, so it doesn't feel less natural in practice.
+    recognition.continuous = false;
     recognition.interimResults = true;
     baseTextRef.current = text ? text + ' ' : '';
     finalTranscriptRef.current = '';
 
     recognition.onresult = (event: any) => {
+      setVoiceError(null);
       let finalText = '';
       let interim = '';
       for (let i = 0; i < event.results.length; i++) {
@@ -126,7 +133,18 @@ export default function MessageComposer({
       finalTranscriptRef.current = finalText;
       setText(baseTextRef.current + finalText + interim);
     };
-    recognition.onerror = () => setListening(false);
+    recognition.onerror = (event: any) => {
+      setListening(false);
+      const reason =
+        event?.error === 'not-allowed' || event?.error === 'service-not-allowed'
+          ? 'Microphone permission is blocked — allow it in your browser\'s site settings.'
+          : event?.error === 'no-speech'
+            ? "Didn't catch any speech — try again."
+            : event?.error === 'network'
+              ? 'Network issue while listening — try again.'
+              : 'Voice input failed — try again.';
+      setVoiceError(reason);
+    };
     recognition.onend = () => {
       setListening(false);
       // Voice-chat flow: once speech ends (silence detected by the browser),
@@ -256,7 +274,13 @@ export default function MessageComposer({
         </div>
       </div>
       <p className="text-center text-[11px] text-neutral-400 mt-2">
-        {listening ? 'Listening — stop talking to send automatically.' : 'AI can make mistakes. Consider checking important information.'}
+        {voiceError ? (
+          <span className="text-red-500">{voiceError}</span>
+        ) : listening ? (
+          'Listening — stop talking to send automatically.'
+        ) : (
+          'AI can make mistakes. Consider checking important information.'
+        )}
       </p>
     </div>
   );
