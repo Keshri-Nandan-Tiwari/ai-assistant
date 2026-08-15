@@ -16,6 +16,10 @@ const chatSchema = z.object({
   // or "provider:modelId" (e.g. "anthropic:reasoning") to pick explicitly.
   model: z.string().default('balanced'),
   useKnowledgeBase: z.boolean().optional().default(false),
+  // Files uploaded via /api/attachments that the user wants read for this
+  // specific message — their extracted text is injected directly, which is
+  // far more reliable than fuzzy retrieval for "read this file I just gave you".
+  attachmentIds: z.array(z.string().uuid()).max(5).optional().default([]),
 });
 
 function resolveProvider(modelField: string) {
@@ -59,6 +63,24 @@ export const streamChat = asyncHandler(async (req: AuthedRequest, res: Response)
   await conversationService.maybeAutoTitle(conversation.id, input.message);
 
   let systemPrompt = SYSTEM_PROMPT;
+
+  if (input.attachmentIds.length > 0) {
+    const attachments = await prisma.attachment.findMany({
+      where: { id: { in: input.attachmentIds }, userId: req.user.id }, // ownership check
+      include: { knowledgeSource: { include: { chunks: { orderBy: { chunkIndex: 'asc' } } } } },
+    });
+    const MAX_CHARS_PER_FILE = 12000;
+    const fileBlocks = attachments.map((a: (typeof attachments)[number]) => {
+      const text = a.knowledgeSource?.chunks.map((c: { content: string }) => c.content).join('') ?? null;
+      if (!text) return `File "${a.fileName}": (could not read this file's content — it may be an image or unsupported format)`;
+      const truncated = text.length > MAX_CHARS_PER_FILE;
+      return `File "${a.fileName}":\n${text.slice(0, MAX_CHARS_PER_FILE)}${truncated ? '\n[...truncated, file is longer]' : ''}`;
+    });
+    if (fileBlocks.length > 0) {
+      systemPrompt += `\n\nThe user has attached the following file(s) to this message — read and use their content to answer:\n\n${fileBlocks.join('\n\n---\n\n')}`;
+    }
+  }
+
   if (input.useKnowledgeBase) {
     const chunks = await retrieveRelevantChunks(req.user.id, input.message);
     const ctx = buildRagContext(chunks as any);

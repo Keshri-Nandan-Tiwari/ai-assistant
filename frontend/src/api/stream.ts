@@ -12,7 +12,7 @@ export interface StreamHandlers {
  * talks to the AI provider directly — only to our own API.
  */
 export async function streamChatMessage(
-  payload: { conversationId?: string; message: string; model: string; useKnowledgeBase?: boolean },
+  payload: { conversationId?: string; message: string; model: string; useKnowledgeBase?: boolean; attachmentIds?: string[] },
   handlers: StreamHandlers,
   signal?: AbortSignal
 ) {

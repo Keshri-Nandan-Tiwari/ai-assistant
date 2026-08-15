@@ -56,7 +56,7 @@ export default function ChatPage() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  async function handleSend(text: string) {
+  async function handleSend(text: string, attachmentIds: string[] = []) {
     const userMsg: ChatMessageData = { id: crypto.randomUUID(), role: 'USER', content: text };
     const assistantMsg: ChatMessageData = { id: crypto.randomUUID(), role: 'ASSISTANT', content: '', streaming: true };
     setMessages((prev) => [...prev, userMsg, assistantMsg]);
@@ -67,7 +67,7 @@ export default function ChatPage() {
     let fullReply = '';
 
     await streamChatMessage(
-      { conversationId, message: text, model },
+      { conversationId, message: text, model, attachmentIds },
       {
         onConversationId: (id) => {
           if (!conversationId) navigate(`/chat/${id}`, { replace: true });
@@ -151,6 +151,7 @@ export default function ChatPage() {
           onToggleVoiceReply={() => setVoiceReplyEnabled((v) => !v)}
           voiceLang={voiceLang}
           onVoiceLangChange={setVoiceLang}
+          conversationId={conversationId}
         />
       </div>
     </div>

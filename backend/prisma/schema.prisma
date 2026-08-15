@@ -170,6 +170,7 @@ model Attachment {
 
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   conversation Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  knowledgeSource KnowledgeSource?
 
   @@index([userId])
   @@map("attachments")
@@ -177,16 +178,18 @@ model Attachment {
 
 // Knowledge base documents for RAG (Retrieval-Augmented Generation)
 model KnowledgeSource {
-  id          String   @id @default(uuid())
-  userId      String   @map("user_id")
-  title       String
-  sourceType  String   @map("source_type") // "file" | "url" | "text"
-  sourceUrl   String?  @map("source_url")
-  status      String   @default("pending") // pending | indexed | failed
-  createdAt   DateTime @default(now()) @map("created_at")
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  attachmentId String?  @unique @map("attachment_id")
+  title        String
+  sourceType   String   @map("source_type") // "file" | "url" | "text"
+  sourceUrl    String?  @map("source_url")
+  status       String   @default("pending") // pending | indexed | failed
+  createdAt    DateTime @default(now()) @map("created_at")
 
-  user   User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  chunks KnowledgeChunk[]
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attachment Attachment? @relation(fields: [attachmentId], references: [id], onDelete: Cascade)
+  chunks     KnowledgeChunk[]
 
   @@index([userId])
   @@map("knowledge_sources")

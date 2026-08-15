@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
-import { Send, Square, Paperclip, Mic, MicOff, ChevronDown, Volume2, VolumeX } from 'lucide-react';
+import { Send, Square, Paperclip, Mic, MicOff, ChevronDown, Volume2, VolumeX, FileText, X, Loader2 } from 'lucide-react';
+import { api, ApiError } from '../../api/client';
 
 interface Props {
-  onSend: (text: string) => void;
+  onSend: (text: string, attachmentIds: string[]) => void;
   onStop: () => void;
   isStreaming: boolean;
   disabled?: boolean;
@@ -10,6 +11,15 @@ interface Props {
   onToggleVoiceReply: () => void;
   voiceLang: string;
   onVoiceLangChange: (lang: string) => void;
+  conversationId?: string;
+}
+
+interface PendingAttachment {
+  id: string;
+  fileName: string;
+  indexed: boolean;
+  uploading: boolean;
+  error?: string;
 }
 
 // A practical set covering all major Indian languages plus common foreign
@@ -62,12 +72,15 @@ export default function MessageComposer({
   onToggleVoiceReply,
   voiceLang,
   onVoiceLangChange,
+  conversationId,
 }: Props) {
   const [text, setText] = useState('');
   const [listening, setListening] = useState(false);
   const [voiceError, setVoiceError] = useState<string | null>(null);
   const [showLangPicker, setShowLangPicker] = useState(false);
+  const [attachments, setAttachments] = useState<PendingAttachment[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const baseTextRef = useRef('');
   const finalTranscriptRef = useRef('');
@@ -81,11 +94,54 @@ export default function MessageComposer({
     };
   }, []);
 
+  async function handleFileChosen(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    e.target.value = ''; // allow re-selecting the same file later
+    if (files.length === 0) return;
+
+    for (const file of files) {
+      const tempId = crypto.randomUUID();
+      setAttachments((prev) => [...prev, { id: tempId, fileName: file.name, indexed: false, uploading: true }]);
+
+      const formData = new FormData();
+      formData.append('file', file);
+      if (conversationId) formData.append('conversationId', conversationId);
+
+      try {
+        const res = await api.upload<{ data: { attachment: { id: string; indexed: boolean } } }>(
+          '/api/attachments',
+          formData
+        );
+        setAttachments((prev) =>
+          prev.map((a) =>
+            a.id === tempId
+              ? { id: res.data.attachment.id, fileName: file.name, indexed: res.data.attachment.indexed, uploading: false }
+              : a
+          )
+        );
+      } catch (err) {
+        setAttachments((prev) =>
+          prev.map((a) =>
+            a.id === tempId
+              ? { ...a, uploading: false, error: err instanceof ApiError ? err.message : 'Upload failed' }
+              : a
+          )
+        );
+      }
+    }
+  }
+
+  function removeAttachment(id: string) {
+    setAttachments((prev) => prev.filter((a) => a.id !== id));
+  }
+
   function handleSend(overrideText?: string) {
     const value = (overrideText ?? text).trim();
     if (!value || isStreaming) return;
-    onSend(value);
+    const readyAttachmentIds = attachments.filter((a) => !a.uploading && !a.error).map((a) => a.id);
+    onSend(value, readyAttachmentIds);
     setText('');
+    setAttachments([]);
     finalTranscriptRef.current = '';
     if (textareaRef.current) textareaRef.current.style.height = 'auto';
   }
@@ -163,6 +219,33 @@ export default function MessageComposer({
   return (
     <div className="border-t border-neutral-200 dark:border-neutral-800 bg-surface p-3 md:p-4">
       <div className="max-w-3xl mx-auto">
+        {attachments.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-2">
+            {attachments.map((a) => (
+              <div
+                key={a.id}
+                className={`flex items-center gap-1.5 rounded-lg border px-2 py-1 text-xs ${
+                  a.error
+                    ? 'border-red-300 text-red-500 bg-red-50 dark:bg-red-950/30'
+                    : 'border-neutral-300 dark:border-neutral-700 bg-surface-raised'
+                }`}
+              >
+                {a.uploading ? <Loader2 size={12} className="animate-spin" /> : <FileText size={12} />}
+                <span className="max-w-[140px] truncate">{a.fileName}</span>
+                {!a.uploading && !a.error && !a.indexed && (
+                  <span className="text-neutral-400" title="Keshri can't read this file type yet, but it's attached">
+                    (not readable)
+                  </span>
+                )}
+                {a.error && <span title={a.error}>failed</span>}
+                <button type="button" onClick={() => removeAttachment(a.id)} className="hover:text-red-500">
+                  <X size={12} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
         {voiceSupported && (
           <div className="relative mb-1.5 flex items-center justify-end gap-3">
             <button
@@ -210,9 +293,18 @@ export default function MessageComposer({
         )}
 
         <div className="flex items-end gap-2 rounded-2xl border border-neutral-300 dark:border-neutral-700 bg-surface-raised px-3 py-2 focus-within:ring-2 focus-within:ring-accent">
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept=".pdf,.txt,.csv,.docx,.png,.jpg,.jpeg,.webp"
+            onChange={handleFileChosen}
+            className="hidden"
+          />
           <button
             type="button"
-            title="Attach a file"
+            title="Attach a file (PDF, Word, text, CSV, or image)"
+            onClick={() => fileInputRef.current?.click()}
             className="p-1.5 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 shrink-0"
           >
             <Paperclip size={18} />
