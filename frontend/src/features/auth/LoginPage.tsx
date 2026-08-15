@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { api, ApiError } from '../../api/client';
 import { useAuthStore } from '../../stores/authStore';
+import OAuthButtons from './OAuthButtons';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -87,6 +88,14 @@ export default function LoginPage() {
             {loading ? 'Logging in…' : 'Continue'}
           </button>
         </form>
+
+        <div className="flex items-center gap-3 my-5">
+          <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-700" />
+          <span className="text-xs text-neutral-400">or</span>
+          <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-700" />
+        </div>
+
+        <OAuthButtons />
 
         <p className="text-center text-sm text-neutral-500 mt-6">
           Don't have an account? <Link to="/register" className="text-accent hover:underline">Create one</Link>

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Loader2, Check, X } from 'lucide-react';
 import { api, ApiError } from '../../api/client';
 import { useAuthStore } from '../../stores/authStore';
+import OAuthButtons from './OAuthButtons';
 
 function strength(pw: string) {
   const checks = [
@@ -158,6 +159,14 @@ export default function RegisterPage() {
             {loading ? 'Creating account…' : 'Create account'}
           </button>
         </form>
+
+        <div className="flex items-center gap-3 my-5">
+          <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-700" />
+          <span className="text-xs text-neutral-400">or</span>
+          <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-700" />
+        </div>
+
+        <OAuthButtons />
 
         <p className="text-center text-sm text-neutral-500 mt-6">
           Already have an account? <Link to="/login" className="text-accent hover:underline">Log in</Link>
