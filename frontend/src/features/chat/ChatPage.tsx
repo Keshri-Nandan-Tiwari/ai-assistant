@@ -5,6 +5,7 @@ import Sidebar from '../conversations/Sidebar';
 import ChatMessage, { type ChatMessageData } from './ChatMessage';
 import MessageComposer from './MessageComposer';
 import ModelSelector from './ModelSelector';
+import VoicePicker from './VoicePicker';
 import { api } from '../../api/client';
 import { streamChatMessage } from '../../api/stream';
 
@@ -15,7 +16,7 @@ const SUGGESTIONS = [
   'Brainstorm ideas for a project',
 ];
 
-function speak(text: string, lang: string) {
+function speak(text: string, lang: string, voiceURI: string | null) {
   if (typeof window === 'undefined' || !window.speechSynthesis) return;
   window.speechSynthesis.cancel(); // don't let replies overlap/queue up
   // Strip Markdown syntax so it doesn't read symbols aloud (e.g. "asterisk asterisk").
@@ -25,6 +26,10 @@ function speak(text: string, lang: string) {
     .replace(/\[(.*?)\]\(.*?\)/g, '$1');
   const utterance = new SpeechSynthesisUtterance(clean);
   utterance.lang = lang;
+  if (voiceURI) {
+    const voice = window.speechSynthesis.getVoices().find((v) => v.voiceURI === voiceURI);
+    if (voice) utterance.voice = voice;
+  }
   window.speechSynthesis.speak(utterance);
 }
 
@@ -37,6 +42,7 @@ export default function ChatPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [voiceReplyEnabled, setVoiceReplyEnabled] = useState(false);
   const [voiceLang, setVoiceLang] = useState('en-IN');
+  const [voiceURI, setVoiceURI] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -81,7 +87,7 @@ export default function ChatPage() {
         onDone: () => {
           setIsStreaming(false);
           setMessages((prev) => prev.map((m) => (m.id === assistantMsg.id ? { ...m, streaming: false } : m)));
-          if (voiceReplyEnabled && fullReply.trim()) speak(fullReply, voiceLang);
+          if (voiceReplyEnabled && fullReply.trim()) speak(fullReply, voiceLang, voiceURI);
         },
         onError: (msg) => {
           setIsStreaming(false);
@@ -109,6 +115,11 @@ export default function ChatPage() {
             <Menu size={20} />
           </button>
           <ModelSelector value={model} onChange={setModel} />
+          {voiceReplyEnabled && (
+            <div className="ml-auto">
+              <VoicePicker selectedVoiceURI={voiceURI} onChange={setVoiceURI} langFilter={voiceLang.split('-')[0]} />
+            </div>
+          )}
         </header>
 
         <main className="flex-1 overflow-y-auto px-4 md:px-0">
