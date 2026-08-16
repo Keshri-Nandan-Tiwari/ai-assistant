@@ -128,4 +128,3 @@ Key endpoints (all under `/api`):
 - `GET /admin/users`, `PATCH /admin/users/:id/status`, `GET /admin/stats`, `GET /admin/audit-logs` (ADMIN role only)
 
 All responses follow `{ success, data | error, message? }`.
-
