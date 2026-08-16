@@ -39,7 +39,7 @@ export default function ContactSection() {
               rel="noreferrer"
               className="flex flex-col items-start gap-2 p-4 rounded-2xl glass-card hover:border-accent/40 hover:glow-accent transition-all"
             >
-              <Icon size={20} className="text-accent" />
+              <Icon className="w-6 h-6 rounded" />
               <div>
                 <p className="text-sm font-medium">{label}</p>
                 <p className="text-xs text-neutral-500 truncate max-w-full">{value}</p>

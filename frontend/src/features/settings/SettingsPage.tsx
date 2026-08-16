@@ -125,8 +125,8 @@ export default function SettingsPage() {
               <span>{user?.email}</span>
             </div>
             <div className="px-4 py-3 flex justify-between text-sm">
-              <span className="text-neutral-500">Username</span>
-              <span>@{user?.username}</span>
+              <span className="text-neutral-500">Name</span>
+              <span>{[user?.firstName, user?.lastName].filter(Boolean).join(' ') || `@${user?.username}`}</span>
             </div>
             <Link to="/settings/security" className="px-4 py-3 flex justify-between text-sm hover:bg-surface-raised">
               <span>Change password / sessions</span>
@@ -151,7 +151,7 @@ export default function SettingsPage() {
                 rel="noreferrer"
                 className="px-4 py-3 flex items-center gap-3 text-sm hover:bg-surface-raised transition-colors"
               >
-                <Icon size={16} className="text-accent shrink-0" />
+                <Icon className="w-5 h-5 rounded shrink-0" />
                 <span className="font-medium w-20 shrink-0">{label}</span>
                 <span className="text-neutral-500 truncate">{value}</span>
               </a>

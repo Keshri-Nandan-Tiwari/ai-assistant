@@ -1,4 +1,9 @@
-export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+// In production, nginx proxies /api/* to the backend on the same origin
+// (see frontend/nginx.conf), so relative paths are all we need — no env
+// var required, and no risk of it pointing at the wrong URL. For local dev
+// (vite dev server, no nginx in front), set VITE_API_URL to talk to the
+// backend directly.
+export const API_URL = import.meta.env.VITE_API_URL || '';
 
 export class ApiError extends Error {
   code: string;

@@ -1,13 +1,13 @@
-import { Mail, Github, Linkedin, Instagram } from 'lucide-react';
+import { GitHubIcon, LinkedInIcon, InstagramIcon, EmailIcon } from '../components/BrandIcons';
 
 export const SOCIAL_LINKS = [
-  { icon: Mail, label: 'Email', value: 'keshrinandantiwari08@gmail.com', href: 'mailto:keshrinandantiwari08@gmail.com' },
-  { icon: Github, label: 'GitHub', value: '@Keshri-Nandan-Tiwari', href: 'https://github.com/Keshri-Nandan-Tiwari' },
+  { icon: EmailIcon, label: 'Email', value: 'keshrinandantiwari08@gmail.com', href: 'mailto:keshrinandantiwari08@gmail.com' },
+  { icon: GitHubIcon, label: 'GitHub', value: '@Keshri-Nandan-Tiwari', href: 'https://github.com/Keshri-Nandan-Tiwari' },
   {
-    icon: Linkedin,
+    icon: LinkedInIcon,
     label: 'LinkedIn',
     value: 'Keshri Nandan Tiwari',
     href: 'https://www.linkedin.com/in/keshri-nandan-tiwari-a68042290/',
   },
-  { icon: Instagram, label: 'Instagram', value: '@keshri_08__', href: 'https://www.instagram.com/keshri_08__' },
+  { icon: InstagramIcon, label: 'Instagram', value: '@keshri_08__', href: 'https://www.instagram.com/keshri_08__' },
 ];
