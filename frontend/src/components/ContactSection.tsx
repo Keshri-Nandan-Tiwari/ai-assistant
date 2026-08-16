@@ -1,18 +1,7 @@
 import { useState } from 'react';
-import { Github, Linkedin, Instagram, Mail, Send, Loader2, Check } from 'lucide-react';
+import { Send, Loader2, Check } from 'lucide-react';
 import { api, ApiError } from '../api/client';
-
-const LINKS = [
-  { icon: Mail, label: 'Email', value: 'keshrinandantiwari08@gmail.com', href: 'mailto:keshrinandantiwari08@gmail.com' },
-  { icon: Github, label: 'GitHub', value: '@Keshri-Nandan-Tiwari', href: 'https://github.com/Keshri-Nandan-Tiwari' },
-  {
-    icon: Linkedin,
-    label: 'LinkedIn',
-    value: 'Keshri Nandan Tiwari',
-    href: 'https://www.linkedin.com/in/keshri-nandan-tiwari-a68042290/',
-  },
-  { icon: Instagram, label: 'Instagram', value: '@keshri_08__', href: 'https://www.instagram.com/keshri_08__' },
-];
+import { SOCIAL_LINKS } from '../constants/socialLinks';
 
 export default function ContactSection() {
   const [form, setForm] = useState({ name: '', email: '', message: '' });
@@ -42,7 +31,7 @@ export default function ContactSection() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="grid grid-cols-2 gap-3 content-start">
-          {LINKS.map(({ icon: Icon, label, value, href }) => (
+          {SOCIAL_LINKS.map(({ icon: Icon, label, value, href }) => (
             <a
               key={label}
               href={href}

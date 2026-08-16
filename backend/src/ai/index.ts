@@ -1,6 +1,7 @@
 import { env } from '../config/env.js';
 import { OpenAIProvider } from './OpenAIProvider.js';
 import { AnthropicProvider } from './AnthropicProvider.js';
+import { logger } from '../config/logger.js';
 import type { AIProvider, ModelInfo } from './AIProvider.js';
 
 /**
@@ -52,5 +53,16 @@ export function listAllModels(): { provider: string; models: ModelInfo[] }[] {
 
 export const hasAnyProvider = registry.size > 0;
 export const defaultProvider = defaultProviderName();
+
+logger.info(
+  {
+    openaiKeySet: !!env.OPENAI_API_KEY,
+    openaiKeyLength: env.OPENAI_API_KEY?.length ?? 0,
+    anthropicKeySet: !!env.ANTHROPIC_API_KEY,
+    registeredProviders: Array.from(registry.keys()),
+    hasAnyProvider,
+  },
+  'AI provider registry initialized'
+);
 
 export type { AIProvider, ChatMessage, StreamChunk, ModelInfo } from './AIProvider.js';

@@ -4,6 +4,7 @@ import { ArrowLeft, Sun, Moon, Monitor, Check } from 'lucide-react';
 import { useThemeStore, ACCENT_PRESETS } from '../../stores/themeStore';
 import { useAuthStore } from '../../stores/authStore';
 import { api } from '../../api/client';
+import { SOCIAL_LINKS } from '../../constants/socialLinks';
 
 const LANGUAGES = [
   { code: 'en', label: 'English' },
@@ -137,6 +138,26 @@ export default function SettingsPage() {
         <button onClick={logout} className="text-sm text-red-500 hover:underline">
           Log out
         </button>
+
+        {/* Connect */}
+        <section>
+          <h2 className="text-sm font-semibold text-neutral-500 uppercase tracking-wide mb-3">Connect</h2>
+          <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 divide-y divide-neutral-200 dark:divide-neutral-800">
+            {SOCIAL_LINKS.map(({ icon: Icon, label, value, href }) => (
+              <a
+                key={label}
+                href={href}
+                target="_blank"
+                rel="noreferrer"
+                className="px-4 py-3 flex items-center gap-3 text-sm hover:bg-surface-raised transition-colors"
+              >
+                <Icon size={16} className="text-accent shrink-0" />
+                <span className="font-medium w-20 shrink-0">{label}</span>
+                <span className="text-neutral-500 truncate">{value}</span>
+              </a>
+            ))}
+          </div>
+        </section>
       </div>
     </div>
   );

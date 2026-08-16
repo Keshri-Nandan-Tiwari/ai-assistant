@@ -40,7 +40,7 @@ export default function LandingPage() {
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
           Meet Keshri.
           <br />
-          <span className="text-accent block min-h-[1.2em]">
+          <span className="text-accent block min-h-[2.6em] sm:min-h-[1.3em]">
             <Typewriter phrases={TAGLINES} />
           </span>
         </h1>
