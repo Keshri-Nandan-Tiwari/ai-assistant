@@ -9,6 +9,12 @@ export const ACCENT_PRESETS: Record<string, { accent: string; hover: string }> =
   green: { accent: '#22c55e', hover: '#16a34a' },
   orange: { accent: '#f97316', hover: '#ea580c' },
   pink: { accent: '#ec4899', hover: '#db2777' },
+  teal: { accent: '#14b8a6', hover: '#0d9488' },
+  indigo: { accent: '#6366f1', hover: '#4f46e5' },
+  amber: { accent: '#f59e0b', hover: '#d97706' },
+  rose: { accent: '#f43f5e', hover: '#e11d48' },
+  cyan: { accent: '#06b6d4', hover: '#0891b2' },
+  lime: { accent: '#84cc16', hover: '#65a30d' },
 };
 
 interface ThemeState {

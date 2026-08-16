@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Sparkles, Zap, ShieldCheck, Globe2, MessageSquare } from 'lucide-react';
 import Typewriter from '../components/Typewriter';
+import Marquee from '../components/Marquee';
 import ContactSection from '../components/ContactSection';
 
 const TAGLINES = [
@@ -8,6 +9,15 @@ const TAGLINES = [
   'Chat by voice, in your own language.',
   'Upload a file — Keshri reads it.',
   'Fast. Secure. Always available.',
+];
+
+const MARQUEE_ITEMS = [
+  'Voice chat',
+  '20+ languages',
+  'File reading',
+  'Instant answers',
+  'Secure by default',
+  'Always available',
 ];
 
 const FEATURES = [
@@ -56,6 +66,10 @@ export default function LandingPage() {
           </Link>
         </div>
       </section>
+
+      <div className="border-y border-neutral-200 dark:border-white/5 py-4 mb-16 bg-accent/[0.03]">
+        <Marquee items={MARQUEE_ITEMS} className="text-neutral-500" />
+      </div>
 
       <section className="max-w-5xl mx-auto px-6 pb-24 grid grid-cols-1 sm:grid-cols-2 gap-4">
         {FEATURES.map(({ icon: Icon, title, desc }) => (

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Sun, Moon, Monitor, Check } from 'lucide-react';
+import { ArrowLeft, Sun, Moon, Monitor, Check, Palette, ChevronDown } from 'lucide-react';
 import { useThemeStore, ACCENT_PRESETS } from '../../stores/themeStore';
 import { useAuthStore } from '../../stores/authStore';
 import { api } from '../../api/client';
@@ -20,6 +20,7 @@ export default function SettingsPage() {
   const { user, logout } = useAuthStore();
   const [language, setLanguage] = useState('en');
   const [saved, setSaved] = useState(false);
+  const [colorPickerOpen, setColorPickerOpen] = useState(false);
 
   async function persistSettings(partial: Record<string, unknown>) {
     try {
@@ -73,23 +74,37 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <p className="text-sm font-medium mb-2">Accent color</p>
-              <div className="flex flex-wrap gap-2.5">
-                {Object.entries(ACCENT_PRESETS).map(([key, val]) => (
-                  <button
-                    key={key}
-                    aria-label={key}
-                    onClick={() => {
-                      setAccent(key);
-                      persistSettings({ accentColor: key });
-                    }}
-                    className="w-9 h-9 rounded-full flex items-center justify-center ring-offset-2 ring-offset-surface transition-all"
-                    style={{ backgroundColor: val.accent, boxShadow: accent === key ? `0 0 0 2px ${val.accent}` : undefined }}
-                  >
-                    {accent === key && <Check size={16} className="text-white" />}
-                  </button>
-                ))}
-              </div>
+              <button
+                type="button"
+                onClick={() => setColorPickerOpen((o) => !o)}
+                className="w-full flex items-center justify-between text-sm font-medium mb-2"
+              >
+                <span className="flex items-center gap-2">
+                  <Palette size={15} className="text-accent" /> Accent color
+                </span>
+                <span className="flex items-center gap-1.5 text-neutral-400">
+                  <span className="w-4 h-4 rounded-full" style={{ backgroundColor: ACCENT_PRESETS[accent]?.accent }} />
+                  <ChevronDown size={14} className={`transition-transform ${colorPickerOpen ? 'rotate-180' : ''}`} />
+                </span>
+              </button>
+              {colorPickerOpen && (
+                <div className="flex flex-wrap gap-2.5 animate-fadeIn">
+                  {Object.entries(ACCENT_PRESETS).map(([key, val]) => (
+                    <button
+                      key={key}
+                      aria-label={key}
+                      onClick={() => {
+                        setAccent(key);
+                        persistSettings({ accentColor: key });
+                      }}
+                      className="w-9 h-9 rounded-full flex items-center justify-center ring-offset-2 ring-offset-surface transition-all"
+                      style={{ backgroundColor: val.accent, boxShadow: accent === key ? `0 0 0 2px ${val.accent}` : undefined }}
+                    >
+                      {accent === key && <Check size={16} className="text-white" />}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -143,7 +158,7 @@ export default function SettingsPage() {
         <section>
           <h2 className="text-sm font-semibold text-neutral-500 uppercase tracking-wide mb-3">Connect</h2>
           <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 divide-y divide-neutral-200 dark:divide-neutral-800">
-            {SOCIAL_LINKS.map(({ icon: Icon, label, value, href }) => (
+            {SOCIAL_LINKS.map(({ icon: Icon, label, href }) => (
               <a
                 key={label}
                 href={href}
@@ -152,8 +167,7 @@ export default function SettingsPage() {
                 className="px-4 py-3 flex items-center gap-3 text-sm hover:bg-surface-raised transition-colors"
               >
                 <Icon className="w-5 h-5 rounded shrink-0" />
-                <span className="font-medium w-20 shrink-0">{label}</span>
-                <span className="text-neutral-500 truncate">{value}</span>
+                <span className="font-medium">{label}</span>
               </a>
             ))}
           </div>
