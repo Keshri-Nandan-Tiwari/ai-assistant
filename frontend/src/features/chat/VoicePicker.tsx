@@ -46,11 +46,11 @@ export default function VoicePicker({ selectedVoiceURI, onChange, langFilter }: 
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-1 text-xs text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 px-2 py-1"
+        className="flex items-center gap-1 text-xs text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 px-2 py-1 max-w-[160px]"
       >
-        <User size={12} />
-        {current ? current.name.replace(/^Google |^Microsoft /, '') : 'Default voice'}
-        <ChevronDown size={12} />
+        <User size={12} className="shrink-0" />
+        <span className="truncate">{current ? current.name.replace(/^Google |^Microsoft /, '') : 'Default voice'}</span>
+        <ChevronDown size={12} className="shrink-0" />
       </button>
       {open && (
         <div className="absolute bottom-full right-0 mb-1 max-h-72 w-64 overflow-y-auto rounded-lg border border-neutral-200 dark:border-neutral-700 bg-surface-raised shadow-lg z-10">

@@ -178,8 +178,8 @@ export default function SettingsPage() {
                 ))}
               </select>
             </div>
-            <div className="px-4 py-3 flex items-center justify-between text-sm">
-              <span className="text-neutral-500">Voice (accent, male/female)</span>
+            <div className="px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm">
+              <span className="text-neutral-500">Voice</span>
               <VoicePicker selectedVoiceURI={voiceURI} onChange={setVoiceURI} langFilter={voiceLang.split('-')[0]} />
             </div>
           </div>

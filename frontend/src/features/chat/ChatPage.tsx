@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Menu, Sparkles } from 'lucide-react';
+import { Menu, Sparkles, AudioLines } from 'lucide-react';
 import Sidebar from '../conversations/Sidebar';
 import ChatMessage, { type ChatMessageData } from './ChatMessage';
 import MessageComposer from './MessageComposer';
 import ModelSelector from './ModelSelector';
-import VoicePicker from './VoicePicker';
-import VoiceOrb from './VoiceOrb';
+import VoiceModeOverlay from './VoiceModeOverlay';
 import { useVoiceStore } from '../../stores/voiceStore';
 import { api } from '../../api/client';
 import { streamChatMessage } from '../../api/stream';
@@ -49,6 +48,7 @@ export default function ChatPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [voiceModeOpen, setVoiceModeOpen] = useState(false);
   const { voiceReplyEnabled, voiceLang, voiceURI, setVoiceReplyEnabled, setVoiceLang, setVoiceURI } = useVoiceStore();
   const abortRef = useRef<AbortController | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -94,7 +94,7 @@ export default function ChatPage() {
         onDone: () => {
           setIsStreaming(false);
           setMessages((prev) => prev.map((m) => (m.id === assistantMsg.id ? { ...m, streaming: false } : m)));
-          if (voiceReplyEnabled && fullReply.trim()) {
+          if ((voiceReplyEnabled || voiceModeOpen) && fullReply.trim()) {
             setIsSpeaking(true);
             speak(fullReply, voiceLang, voiceURI, () => setIsSpeaking(false));
           }
@@ -125,11 +125,13 @@ export default function ChatPage() {
             <Menu size={20} />
           </button>
           <ModelSelector value={model} onChange={setModel} />
-          {voiceReplyEnabled && (
-            <div className="ml-auto">
-              <VoicePicker selectedVoiceURI={voiceURI} onChange={setVoiceURI} langFilter={voiceLang.split('-')[0]} />
-            </div>
-          )}
+          <button
+            onClick={() => setVoiceModeOpen(true)}
+            title="Voice mode"
+            className="ml-auto p-2 rounded-full text-accent hover:bg-accent/10 transition-colors"
+          >
+            <AudioLines size={19} />
+          </button>
         </header>
 
         <main className="flex-1 overflow-y-auto px-4 md:px-0">
@@ -164,8 +166,6 @@ export default function ChatPage() {
           </div>
         </main>
 
-        {(isListening || isSpeaking) && <VoiceOrb state={isListening ? 'listening' : 'speaking'} />}
-
         <MessageComposer
           onSend={handleSend}
           onStop={handleStop}
@@ -178,6 +178,19 @@ export default function ChatPage() {
           onListeningChange={setIsListening}
         />
       </div>
+
+      {voiceModeOpen && (
+        <VoiceModeOverlay
+          onSend={handleSend}
+          isStreaming={isStreaming}
+          isSpeaking={isSpeaking}
+          onClose={() => {
+            window.speechSynthesis?.cancel();
+            setIsSpeaking(false);
+            setVoiceModeOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -4,62 +4,35 @@ interface Props {
   state: 'idle' | 'listening' | 'speaking';
 }
 
-// A glowing, audio-reactive orb inspired by Jarvis-style assistant UIs and
-// the voice-mode visualizers in ChatGPT/Gemini. Pure CSS + Canvas — no 3D
-// engine or character assets, which genuinely aren't feasible to build here,
-// but this still reacts live to real microphone volume, not just a loop.
+// A glowing, rotating orb inspired by Jarvis-style assistant UIs and the
+// voice-mode visualizers in ChatGPT/Gemini. Pure CSS + Canvas — no 3D engine
+// or character assets, which genuinely aren't feasible to build here.
+//
+// Important: this deliberately does NOT grab the microphone itself for real
+// audio levels. Doing that competes with the SpeechRecognition API for mic
+// access at the same time, which broke voice input entirely on several
+// Android devices. The pulse below is a smooth simulated animation instead —
+// still lively and reactive-looking, just not tied to real mic hardware.
 export default function VoiceOrb({ state }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [level, setLevel] = useState(0); // 0..1 live volume while listening
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const rafRef = useRef<number | null>(null);
+  const [level, setLevel] = useState(0);
 
-  // Sample real microphone volume while listening, so the orb genuinely
-  // reacts to how loudly the person is talking, not a canned animation.
   useEffect(() => {
-    if (state !== 'listening') {
+    if (state === 'idle') {
       setLevel(0);
       return;
     }
-    let stream: MediaStream | null = null;
-    let cancelled = false;
-
-    navigator.mediaDevices
-      ?.getUserMedia({ audio: true })
-      .then((s) => {
-        if (cancelled) {
-          s.getTracks().forEach((t) => t.stop());
-          return;
-        }
-        stream = s;
-        const ctx = new AudioContext();
-        audioCtxRef.current = ctx;
-        const source = ctx.createMediaStreamSource(s);
-        const analyser = ctx.createAnalyser();
-        analyser.fftSize = 256;
-        source.connect(analyser);
-        const data = new Uint8Array(analyser.frequencyBinCount);
-
-        function tick() {
-          analyser.getByteFrequencyData(data);
-          const avg = data.reduce((a, b) => a + b, 0) / data.length;
-          setLevel(Math.min(1, avg / 90));
-          rafRef.current = requestAnimationFrame(tick);
-        }
-        tick();
-      })
-      .catch(() => {
-        // Mic access denied/unavailable — fall back to a gentle idle pulse
-        // rather than breaking the visual entirely.
-        setLevel(0.3);
-      });
-
-    return () => {
-      cancelled = true;
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      stream?.getTracks().forEach((t) => t.stop());
-      audioCtxRef.current?.close().catch(() => {});
-    };
+    let raf: number;
+    let t = 0;
+    function tick() {
+      t += 0.06;
+      // Layered sine waves read as more "alive" than a single steady pulse.
+      const wave = Math.sin(t) * 0.5 + Math.sin(t * 2.3) * 0.3 + Math.sin(t * 0.7) * 0.2;
+      setLevel(0.35 + Math.abs(wave) * 0.4);
+      raf = requestAnimationFrame(tick);
+    }
+    tick();
+    return () => cancelAnimationFrame(raf);
   }, [state]);
 
   // Draw the rotating rings + core on canvas — smoother and cheaper than
