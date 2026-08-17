@@ -47,9 +47,8 @@ export default function ChatPage() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [isListening, setIsListening] = useState(false);
   const [voiceModeOpen, setVoiceModeOpen] = useState(false);
-  const { voiceReplyEnabled, voiceLang, voiceURI, setVoiceReplyEnabled, setVoiceLang, setVoiceURI } = useVoiceStore();
+  const { voiceReplyEnabled, voiceLang, voiceURI, setVoiceReplyEnabled, setVoiceLang } = useVoiceStore();
   const abortRef = useRef<AbortController | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -175,7 +174,6 @@ export default function ChatPage() {
           voiceLang={voiceLang}
           onVoiceLangChange={setVoiceLang}
           conversationId={conversationId}
-          onListeningChange={setIsListening}
         />
       </div>
 
