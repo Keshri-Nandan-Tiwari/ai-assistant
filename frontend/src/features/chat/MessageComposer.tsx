@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Send, Square, Paperclip, Mic, MicOff, ChevronDown, Volume2, VolumeX, FileText, X, Loader2 } from 'lucide-react';
 import { api, ApiError } from '../../api/client';
+import { VOICE_LANGUAGES } from '../../constants/voiceLanguages';
 
 interface Props {
   onSend: (text: string, attachmentIds: string[]) => void;
@@ -12,6 +13,7 @@ interface Props {
   voiceLang: string;
   onVoiceLangChange: (lang: string) => void;
   conversationId?: string;
+  onListeningChange?: (listening: boolean) => void;
 }
 
 interface PendingAttachment {
@@ -21,31 +23,6 @@ interface PendingAttachment {
   uploading: boolean;
   error?: string;
 }
-
-// A practical set covering all major Indian languages plus common foreign
-// ones. BCP-47 codes are what the browser's speech APIs expect.
-export const VOICE_LANGUAGES = [
-  { code: 'en-IN', label: 'English (India)' },
-  { code: 'en-US', label: 'English (US)' },
-  { code: 'hi-IN', label: 'Hindi' },
-  { code: 'bn-IN', label: 'Bengali' },
-  { code: 'ta-IN', label: 'Tamil' },
-  { code: 'te-IN', label: 'Telugu' },
-  { code: 'mr-IN', label: 'Marathi' },
-  { code: 'gu-IN', label: 'Gujarati' },
-  { code: 'kn-IN', label: 'Kannada' },
-  { code: 'ml-IN', label: 'Malayalam' },
-  { code: 'pa-IN', label: 'Punjabi' },
-  { code: 'ur-IN', label: 'Urdu' },
-  { code: 'es-ES', label: 'Spanish' },
-  { code: 'fr-FR', label: 'French' },
-  { code: 'de-DE', label: 'German' },
-  { code: 'zh-CN', label: 'Chinese (Mandarin)' },
-  { code: 'ja-JP', label: 'Japanese' },
-  { code: 'ar-SA', label: 'Arabic' },
-  { code: 'pt-BR', label: 'Portuguese' },
-  { code: 'ru-RU', label: 'Russian' },
-];
 
 interface SpeechRecognitionLike extends EventTarget {
   lang: string;
@@ -73,6 +50,7 @@ export default function MessageComposer({
   voiceLang,
   onVoiceLangChange,
   conversationId,
+  onListeningChange,
 }: Props) {
   const [text, setText] = useState('');
   const [listening, setListening] = useState(false);
@@ -162,7 +140,14 @@ export default function MessageComposer({
     if (listening) {
       recognitionRef.current?.stop();
       setListening(false);
+      onListeningChange?.(false);
       return;
+    }
+
+    // Real "interrupt" behavior: tapping the mic always stops Keshri talking
+    // immediately, like interrupting someone mid-sentence to say something.
+    if (typeof window !== 'undefined' && window.speechSynthesis?.speaking) {
+      window.speechSynthesis.cancel();
     }
 
     setVoiceError(null);
@@ -191,6 +176,7 @@ export default function MessageComposer({
     };
     recognition.onerror = (event: any) => {
       setListening(false);
+      onListeningChange?.(false);
       const reason =
         event?.error === 'not-allowed' || event?.error === 'service-not-allowed'
           ? 'Microphone permission is blocked — allow it in your browser\'s site settings.'
@@ -203,6 +189,7 @@ export default function MessageComposer({
     };
     recognition.onend = () => {
       setListening(false);
+      onListeningChange?.(false);
       // Voice-chat flow: once speech ends (silence detected by the browser),
       // send automatically — no separate tap needed, like a real voice call.
       const spoken = (baseTextRef.current + finalTranscriptRef.current).trim();
@@ -212,6 +199,7 @@ export default function MessageComposer({
     recognitionRef.current = recognition;
     recognition.start();
     setListening(true);
+    onListeningChange?.(true);
   }
 
   const currentLangLabel = VOICE_LANGUAGES.find((l) => l.code === voiceLang)?.label ?? voiceLang;

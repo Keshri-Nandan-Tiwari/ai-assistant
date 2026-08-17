@@ -1,0 +1,25 @@
+// A practical set covering all major Indian languages plus common foreign
+// ones. BCP-47 codes are what the browser's speech APIs expect.
+export const VOICE_LANGUAGES = [
+  { code: 'en-IN', label: 'English (India)' },
+  { code: 'en-US', label: 'English (US)' },
+  { code: 'en-GB', label: 'English (UK)' },
+  { code: 'hi-IN', label: 'Hindi' },
+  { code: 'bn-IN', label: 'Bengali' },
+  { code: 'ta-IN', label: 'Tamil' },
+  { code: 'te-IN', label: 'Telugu' },
+  { code: 'mr-IN', label: 'Marathi' },
+  { code: 'gu-IN', label: 'Gujarati' },
+  { code: 'kn-IN', label: 'Kannada' },
+  { code: 'ml-IN', label: 'Malayalam' },
+  { code: 'pa-IN', label: 'Punjabi' },
+  { code: 'ur-IN', label: 'Urdu' },
+  { code: 'es-ES', label: 'Spanish' },
+  { code: 'fr-FR', label: 'French' },
+  { code: 'de-DE', label: 'German' },
+  { code: 'zh-CN', label: 'Chinese (Mandarin)' },
+  { code: 'ja-JP', label: 'Japanese' },
+  { code: 'ar-SA', label: 'Arabic' },
+  { code: 'pt-BR', label: 'Portuguese' },
+  { code: 'ru-RU', label: 'Russian' },
+];

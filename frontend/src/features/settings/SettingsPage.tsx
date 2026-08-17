@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Sun, Moon, Monitor, Check, Palette, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Sun, Moon, Monitor, Check, Palette, ChevronDown, Volume2 } from 'lucide-react';
 import { useThemeStore, ACCENT_PRESETS } from '../../stores/themeStore';
+import { useVoiceStore } from '../../stores/voiceStore';
 import { useAuthStore } from '../../stores/authStore';
 import { api } from '../../api/client';
 import { SOCIAL_LINKS } from '../../constants/socialLinks';
+import { VOICE_LANGUAGES } from '../../constants/voiceLanguages';
+import VoicePicker from '../chat/VoicePicker';
 
 const LANGUAGES = [
   { code: 'en', label: 'English' },
@@ -17,6 +20,7 @@ const LANGUAGES = [
 
 export default function SettingsPage() {
   const { mode, accent, setMode, setAccent } = useThemeStore();
+  const { voiceLang, voiceURI, setVoiceLang, setVoiceURI } = useVoiceStore();
   const { user, logout } = useAuthStore();
   const [language, setLanguage] = useState('en');
   const [saved, setSaved] = useState(false);
@@ -153,6 +157,33 @@ export default function SettingsPage() {
         <button onClick={logout} className="text-sm text-red-500 hover:underline">
           Log out
         </button>
+
+        {/* Voice */}
+        <section>
+          <h2 className="text-sm font-semibold text-neutral-500 uppercase tracking-wide mb-3">Voice</h2>
+          <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 divide-y divide-neutral-200 dark:divide-neutral-800">
+            <div className="px-4 py-3 flex items-center justify-between text-sm">
+              <span className="flex items-center gap-2 text-neutral-500">
+                <Volume2 size={15} /> Speech language
+              </span>
+              <select
+                value={voiceLang}
+                onChange={(e) => setVoiceLang(e.target.value)}
+                className="bg-transparent text-right outline-none"
+              >
+                {VOICE_LANGUAGES.map((l) => (
+                  <option key={l.code} value={l.code}>
+                    {l.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="px-4 py-3 flex items-center justify-between text-sm">
+              <span className="text-neutral-500">Voice (accent, male/female)</span>
+              <VoicePicker selectedVoiceURI={voiceURI} onChange={setVoiceURI} langFilter={voiceLang.split('-')[0]} />
+            </div>
+          </div>
+        </section>
 
         {/* Connect */}
         <section>

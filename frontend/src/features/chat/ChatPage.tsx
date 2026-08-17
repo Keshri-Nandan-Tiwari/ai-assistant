@@ -6,6 +6,8 @@ import ChatMessage, { type ChatMessageData } from './ChatMessage';
 import MessageComposer from './MessageComposer';
 import ModelSelector from './ModelSelector';
 import VoicePicker from './VoicePicker';
+import VoiceOrb from './VoiceOrb';
+import { useVoiceStore } from '../../stores/voiceStore';
 import { api } from '../../api/client';
 import { streamChatMessage } from '../../api/stream';
 
@@ -16,8 +18,11 @@ const SUGGESTIONS = [
   'Brainstorm ideas for a project',
 ];
 
-function speak(text: string, lang: string, voiceURI: string | null) {
-  if (typeof window === 'undefined' || !window.speechSynthesis) return;
+function speak(text: string, lang: string, voiceURI: string | null, onEnd: () => void) {
+  if (typeof window === 'undefined' || !window.speechSynthesis) {
+    onEnd();
+    return;
+  }
   window.speechSynthesis.cancel(); // don't let replies overlap/queue up
   // Strip Markdown syntax so it doesn't read symbols aloud (e.g. "asterisk asterisk").
   const clean = text
@@ -30,6 +35,8 @@ function speak(text: string, lang: string, voiceURI: string | null) {
     const voice = window.speechSynthesis.getVoices().find((v) => v.voiceURI === voiceURI);
     if (voice) utterance.voice = voice;
   }
+  utterance.onend = onEnd;
+  utterance.onerror = onEnd;
   window.speechSynthesis.speak(utterance);
 }
 
@@ -40,9 +47,9 @@ export default function ChatPage() {
   const [model, setModel] = useState('balanced');
   const [isStreaming, setIsStreaming] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [voiceReplyEnabled, setVoiceReplyEnabled] = useState(false);
-  const [voiceLang, setVoiceLang] = useState('en-IN');
-  const [voiceURI, setVoiceURI] = useState<string | null>(null);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const { voiceReplyEnabled, voiceLang, voiceURI, setVoiceReplyEnabled, setVoiceLang, setVoiceURI } = useVoiceStore();
   const abortRef = useRef<AbortController | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -87,7 +94,10 @@ export default function ChatPage() {
         onDone: () => {
           setIsStreaming(false);
           setMessages((prev) => prev.map((m) => (m.id === assistantMsg.id ? { ...m, streaming: false } : m)));
-          if (voiceReplyEnabled && fullReply.trim()) speak(fullReply, voiceLang, voiceURI);
+          if (voiceReplyEnabled && fullReply.trim()) {
+            setIsSpeaking(true);
+            speak(fullReply, voiceLang, voiceURI, () => setIsSpeaking(false));
+          }
         },
         onError: (msg) => {
           setIsStreaming(false);
@@ -154,15 +164,18 @@ export default function ChatPage() {
           </div>
         </main>
 
+        {(isListening || isSpeaking) && <VoiceOrb state={isListening ? 'listening' : 'speaking'} />}
+
         <MessageComposer
           onSend={handleSend}
           onStop={handleStop}
           isStreaming={isStreaming}
           voiceReplyEnabled={voiceReplyEnabled}
-          onToggleVoiceReply={() => setVoiceReplyEnabled((v) => !v)}
+          onToggleVoiceReply={() => setVoiceReplyEnabled(!voiceReplyEnabled)}
           voiceLang={voiceLang}
           onVoiceLangChange={setVoiceLang}
           conversationId={conversationId}
+          onListeningChange={setIsListening}
         />
       </div>
     </div>
