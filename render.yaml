@@ -35,11 +35,11 @@ services:
       - key: OPENAI_BASE_URL
         value: https://api.groq.com/openai/v1
       - key: OPENAI_MODEL_FAST
-        value: llama-3.1-8b-instant
+        value: openai/gpt-oss-20b
       - key: OPENAI_MODEL_BALANCED
-        value: llama-3.3-70b-versatile
+        value: openai/gpt-oss-120b
       - key: OPENAI_MODEL_ADVANCED
-        value: llama-3.3-70b-versatile
+        value: openai/gpt-oss-120b
       - key: OPENAI_API_KEY
         sync: false # your free Groq API key goes here (console.groq.com/keys)
       - key: ANTHROPIC_API_KEY

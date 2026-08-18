@@ -44,10 +44,24 @@ export default function VoiceModeOverlay({ onSend, isStreaming, isSpeaking, onCl
     };
   }, []);
 
-  function startListening() {
-    if (!SpeechRecognitionCtor || listening || isStreaming || isSpeaking) return;
+  // The real "hands-free conversation" behavior: the instant Keshri finishes
+  // speaking, start listening again automatically — no re-tapping needed.
+  // A tiny delay avoids the mic picking up the tail end of Keshri's own voice.
+  const wasSpeakingRef = useRef(false);
+  useEffect(() => {
+    const wasSpeaking = wasSpeakingRef.current;
+    wasSpeakingRef.current = isSpeaking;
+    if (wasSpeaking && !isSpeaking) {
+      const t = setTimeout(() => startListening(), 500);
+      return () => clearTimeout(t);
+    }
+  }, [isSpeaking]);
 
-    // Tapping the mic always interrupts Keshri if it's still talking.
+  function startListening() {
+    if (!SpeechRecognitionCtor || listening || isStreaming) return;
+
+    // Tapping the mic (or speaking) always interrupts Keshri if it's still
+    // talking — a real conversation lets you cut in, not wait your turn.
     if (window.speechSynthesis?.speaking) window.speechSynthesis.cancel();
 
     setError(null);
@@ -86,7 +100,7 @@ export default function VoiceModeOverlay({ onSend, isStreaming, isSpeaking, onCl
     : isStreaming
       ? 'Thinking…'
       : isSpeaking
-        ? 'Speaking…'
+        ? 'Speaking… (tap to interrupt)'
         : 'Tap the mic to talk';
 
   return (
@@ -139,7 +153,7 @@ export default function VoiceModeOverlay({ onSend, isStreaming, isSpeaking, onCl
       <div className="pb-12">
         <button
           onClick={startListening}
-          disabled={listening || isStreaming || isSpeaking}
+          disabled={listening || isStreaming}
           className={`w-16 h-16 rounded-full flex items-center justify-center transition-all glow-accent ${
             listening ? 'bg-red-500' : 'bg-accent hover:bg-accent-hover'
           } disabled:opacity-40`}
