@@ -174,6 +174,7 @@ export default function ChatPage() {
           voiceLang={voiceLang}
           onVoiceLangChange={setVoiceLang}
           conversationId={conversationId}
+          onOpenVoiceMode={() => setVoiceModeOpen(true)}
         />
       </div>
 

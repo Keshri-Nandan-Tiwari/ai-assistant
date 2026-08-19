@@ -104,7 +104,7 @@ export default function VoiceModeOverlay({ onSend, isStreaming, isSpeaking, onCl
         : 'Tap the mic to talk';
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-between bg-surface/95 backdrop-blur-xl animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-between bg-surface/95 backdrop-blur-xl animate-spreadIn">
       <div className="w-full flex items-center justify-between px-4 py-4">
         <button
           onClick={() => setShowSettings((s) => !s)}

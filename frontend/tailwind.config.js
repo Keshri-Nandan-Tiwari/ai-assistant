@@ -22,6 +22,10 @@ export default {
         pulseGlow: { '0%,100%': { opacity: 0.6 }, '50%': { opacity: 1 } },
         blink: { '0%,49%': { opacity: 1 }, '50%,100%': { opacity: 0 } },
         marquee: { from: { transform: 'translateX(0)' }, to: { transform: 'translateX(-50%)' } },
+        spreadIn: {
+          from: { opacity: 0, transform: 'scale(0.15)', transformOrigin: 'bottom center' },
+          to: { opacity: 1, transform: 'scale(1)', transformOrigin: 'bottom center' },
+        },
       },
       animation: {
         fadeIn: 'fadeIn 0.2s ease-out',
@@ -29,6 +33,7 @@ export default {
         pulseGlow: 'pulseGlow 2s ease-in-out infinite',
         blink: 'blink 1s step-start infinite',
         marquee: 'marquee 18s linear infinite',
+        spreadIn: 'spreadIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
       },
     },
   },

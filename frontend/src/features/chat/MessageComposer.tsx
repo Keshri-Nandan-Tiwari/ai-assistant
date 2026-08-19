@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Send, Square, Paperclip, Mic, MicOff, ChevronDown, Volume2, VolumeX, FileText, X, Loader2 } from 'lucide-react';
 import { api, ApiError } from '../../api/client';
 import { VOICE_LANGUAGES } from '../../constants/voiceLanguages';
+import VoiceOrb from './VoiceOrb';
 
 interface Props {
   onSend: (text: string, attachmentIds: string[]) => void;
@@ -14,6 +15,7 @@ interface Props {
   onVoiceLangChange: (lang: string) => void;
   conversationId?: string;
   onListeningChange?: (listening: boolean) => void;
+  onOpenVoiceMode?: () => void;
 }
 
 interface PendingAttachment {
@@ -51,6 +53,7 @@ export default function MessageComposer({
   onVoiceLangChange,
   conversationId,
   onListeningChange,
+  onOpenVoiceMode,
 }: Props) {
   const [text, setText] = useState('');
   const [listening, setListening] = useState(false);
@@ -332,6 +335,17 @@ export default function MessageComposer({
           >
             {listening ? <MicOff size={18} /> : <Mic size={18} />}
           </button>
+
+          {onOpenVoiceMode && voiceSupported && (
+            <button
+              type="button"
+              onClick={onOpenVoiceMode}
+              title="Open Voice Mode"
+              className="shrink-0 rounded-full overflow-hidden"
+            >
+              <VoiceOrb state="idle" size={26} />
+            </button>
+          )}
 
           {isStreaming ? (
             <button

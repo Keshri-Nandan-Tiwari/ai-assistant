@@ -61,11 +61,11 @@ export default function VoiceOrb({ state, size = 160 }: Props) {
       const color = `hsl(${hue % 360}, 85%, 58%)`;
 
       const baseRadius = 34 * scale;
-      // While speaking, the core breathes — alternating shrink and grow
-      // rather than only pulsing outward, per the "shrink while talking" ask.
-      const breathe = state === 'speaking' ? Math.sin(angle / 8) * 8 * scale : 0;
+      // While speaking, the core breathes — repeatedly shrinking and growing
+      // rather than only pulsing outward, per the "shrink then come back" ask.
+      const breathe = state === 'speaking' ? Math.sin(angle / 6) * 14 * scale : 0;
       const pulse = state === 'idle' ? Math.sin(angle / 25) * 3 * scale : level * 20 * scale;
-      const coreRadius = Math.max(10 * scale, baseRadius + pulse - Math.abs(breathe));
+      const coreRadius = Math.max(8 * scale, baseRadius + pulse - Math.abs(breathe) * 1.4);
 
       const grad = ctx!.createRadialGradient(cx, cy, 0, cx, cy, coreRadius * 1.8);
       grad.addColorStop(0, color);
