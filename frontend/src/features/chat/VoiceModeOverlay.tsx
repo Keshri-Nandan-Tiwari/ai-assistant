@@ -145,13 +145,12 @@ export default function VoiceModeOverlay({ onSend, isStreaming, isSpeaking, onCl
       )}
 
       <div className="flex-1 flex flex-col items-center justify-center gap-4">
+        <VoiceOrb state={state} size={Math.min(280, typeof window !== 'undefined' ? window.innerWidth * 0.7 : 260)} interactive />
         <p className="text-sm text-neutral-400">{statusText}</p>
         {error && <p className="text-xs text-red-500 max-w-xs text-center px-4">{error}</p>}
       </div>
 
-      {/* Orb sits directly beside the mic button — the main control cluster. */}
-      <div className="pb-12 flex items-center justify-center gap-6">
-        <VoiceOrb state={state} size={90} />
+      <div className="pb-12">
         <button
           onClick={startListening}
           disabled={listening || isStreaming}
