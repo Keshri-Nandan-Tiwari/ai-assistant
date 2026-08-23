@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Menu, Sparkles, AudioLines } from 'lucide-react';
+import { Menu, Sparkles } from 'lucide-react';
 import Sidebar from '../conversations/Sidebar';
 import ChatMessage, { type ChatMessageData } from './ChatMessage';
 import MessageComposer from './MessageComposer';
 import ModelSelector from './ModelSelector';
 import VoiceModeOverlay from './VoiceModeOverlay';
+import VoiceOrb from './VoiceOrb';
 import { useVoiceStore } from '../../stores/voiceStore';
 import { api } from '../../api/client';
 import { streamChatMessage } from '../../api/stream';
@@ -127,9 +128,9 @@ export default function ChatPage() {
           <button
             onClick={() => setVoiceModeOpen(true)}
             title="Voice mode"
-            className="ml-auto p-2 rounded-full text-accent hover:bg-accent/10 transition-colors"
+            className="ml-auto rounded-full overflow-hidden"
           >
-            <AudioLines size={19} />
+            <VoiceOrb state="idle" size={26} />
           </button>
         </header>
 
