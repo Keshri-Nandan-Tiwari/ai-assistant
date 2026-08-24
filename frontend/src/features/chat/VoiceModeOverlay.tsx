@@ -33,6 +33,7 @@ export default function VoiceModeOverlay({ onSend, isStreaming, isSpeaking, onCl
   const [listening, setListening] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [continuousMode, setContinuousMode] = useState(true);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const SpeechRecognitionCtor = getSpeechRecognition();
 
@@ -44,18 +45,19 @@ export default function VoiceModeOverlay({ onSend, isStreaming, isSpeaking, onCl
     };
   }, []);
 
-  // The real "hands-free conversation" behavior: the instant Keshri finishes
-  // speaking, start listening again automatically — no re-tapping needed.
+  // The "hands-free conversation" behavior: once Keshri finishes speaking,
+  // start listening again automatically — no re-tapping needed. Can be
+  // turned off via the Continuous toggle for a tap-each-time flow instead.
   // A tiny delay avoids the mic picking up the tail end of Keshri's own voice.
   const wasSpeakingRef = useRef(false);
   useEffect(() => {
     const wasSpeaking = wasSpeakingRef.current;
     wasSpeakingRef.current = isSpeaking;
-    if (wasSpeaking && !isSpeaking) {
+    if (wasSpeaking && !isSpeaking && continuousMode) {
       const t = setTimeout(() => startListening(), 500);
       return () => clearTimeout(t);
     }
-  }, [isSpeaking]);
+  }, [isSpeaking, continuousMode]);
 
   function startListening() {
     if (!SpeechRecognitionCtor || listening || isStreaming) return;
@@ -95,34 +97,49 @@ export default function VoiceModeOverlay({ onSend, isStreaming, isSpeaking, onCl
   }
 
   const state = listening ? 'listening' : isSpeaking ? 'speaking' : 'idle';
-  const statusText = listening
-    ? 'Listening…'
+  const stateLabel = listening
+    ? 'LISTENING'
     : isStreaming
-      ? 'Thinking…'
+      ? 'THINKING'
       : isSpeaking
-        ? 'Speaking… (tap to interrupt)'
-        : 'Tap the mic to talk';
+        ? 'RESPONDING'
+        : 'READY';
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-between bg-surface/95 backdrop-blur-xl animate-spreadIn">
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-between bg-black animate-spreadIn overflow-hidden">
+      {/* Top bar: branding, state indicator, controls */}
       <div className="w-full flex items-center justify-between px-4 py-4">
-        <button
-          onClick={() => setShowSettings((s) => !s)}
-          className="p-2 rounded-full text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"
+        <div className="flex items-center gap-1.5 text-accent">
+          <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulseGlow" />
+          <span className="text-[11px] font-semibold tracking-[0.15em]">KESHRI</span>
+        </div>
+
+        {/* State indicator, cross-fades between READY/LISTENING/THINKING/RESPONDING */}
+        <p
+          key={stateLabel}
+          className="absolute left-1/2 -translate-x-1/2 top-4 text-[11px] font-medium tracking-[0.2em] text-neutral-400 animate-fadeIn"
         >
-          <Settings2 size={20} />
-        </button>
-        <p className="text-sm font-medium text-neutral-400">Keshri Voice</p>
-        <button
-          onClick={onClose}
-          className="p-2 rounded-full text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"
-        >
-          <X size={20} />
-        </button>
+          {stateLabel}
+        </p>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowSettings((s) => !s)}
+            className="w-9 h-9 rounded-full flex items-center justify-center border border-white/10 bg-white/5 text-neutral-400 hover:border-accent/40 hover:text-accent transition-all"
+          >
+            <Settings2 size={16} />
+          </button>
+          <button
+            onClick={onClose}
+            className="w-9 h-9 rounded-full flex items-center justify-center border border-white/10 bg-white/5 text-neutral-400 hover:border-accent/40 hover:text-accent transition-all"
+          >
+            <X size={16} />
+          </button>
+        </div>
       </div>
 
       {showSettings && (
-        <div className="w-full max-w-xs px-4 -mt-2 animate-fadeIn space-y-3">
+        <div className="w-full max-w-xs px-4 -mt-2 animate-fadeIn space-y-3 z-10">
           <div className="glass-card rounded-xl p-3 flex items-center justify-between text-sm">
             <span className="text-neutral-500">Language</span>
             <select
@@ -144,13 +161,13 @@ export default function VoiceModeOverlay({ onSend, isStreaming, isSpeaking, onCl
         </div>
       )}
 
-      <div className="flex-1 flex flex-col items-center justify-center gap-4">
-        <VoiceOrb state={state} size={Math.min(280, typeof window !== 'undefined' ? window.innerWidth * 0.7 : 260)} interactive />
-        <p className="text-sm text-neutral-400">{statusText}</p>
+      <div className="flex-1 flex flex-col items-center justify-center gap-4 -mt-8">
+        <VoiceOrb state={state} size={Math.min(300, typeof window !== 'undefined' ? window.innerWidth * 0.75 : 280)} interactive />
         {error && <p className="text-xs text-red-500 max-w-xs text-center px-4">{error}</p>}
       </div>
 
-      <div className="pb-12">
+      {/* Bottom: mic + continuous toggle */}
+      <div className="pb-12 flex flex-col items-center gap-4">
         <button
           onClick={startListening}
           disabled={listening || isStreaming}
@@ -159,6 +176,13 @@ export default function VoiceModeOverlay({ onSend, isStreaming, isSpeaking, onCl
           } disabled:opacity-40`}
         >
           <Mic size={26} className="text-white" />
+        </button>
+        <button
+          onClick={() => setContinuousMode((c) => !c)}
+          className="flex items-center gap-1.5 text-[11px] tracking-wide text-neutral-400 hover:text-accent transition-colors"
+        >
+          <span className={`w-1.5 h-1.5 rounded-full ${continuousMode ? 'bg-accent' : 'bg-neutral-600'}`} />
+          Continuous: {continuousMode ? 'ON' : 'OFF'}
         </button>
       </div>
     </div>
