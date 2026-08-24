@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Send, Square, Paperclip, Mic, MicOff, ChevronDown, Volume2, VolumeX, FileText, X, Loader2 } from 'lucide-react';
 import { api, ApiError } from '../../api/client';
 import { VOICE_LANGUAGES } from '../../constants/voiceLanguages';
-import VoiceOrb from './VoiceOrb';
+import WaveformIcon from './WaveformIcon';
 
 interface Props {
   onSend: (text: string, attachmentIds: string[]) => void;
@@ -343,7 +343,7 @@ export default function MessageComposer({
               title="Open Voice Mode"
               className="shrink-0 rounded-full overflow-hidden"
             >
-              <VoiceOrb state="idle" size={26} />
+              <WaveformIcon size={26} />
             </button>
           )}
 

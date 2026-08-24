@@ -6,7 +6,7 @@ import ChatMessage, { type ChatMessageData } from './ChatMessage';
 import MessageComposer from './MessageComposer';
 import ModelSelector from './ModelSelector';
 import VoiceModeOverlay from './VoiceModeOverlay';
-import VoiceOrb from './VoiceOrb';
+import WaveformIcon from './WaveformIcon';
 import { useVoiceStore } from '../../stores/voiceStore';
 import { api } from '../../api/client';
 import { streamChatMessage } from '../../api/stream';
@@ -130,7 +130,7 @@ export default function ChatPage() {
             title="Voice mode"
             className="ml-auto rounded-full overflow-hidden"
           >
-            <VoiceOrb state="idle" size={26} />
+            <WaveformIcon size={26} />
           </button>
         </header>
 
