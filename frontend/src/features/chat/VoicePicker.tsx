@@ -53,7 +53,7 @@ export default function VoicePicker({ selectedVoiceURI, onChange, langFilter }: 
         <ChevronDown size={12} className="shrink-0" />
       </button>
       {open && (
-        <div className="absolute bottom-full right-0 mb-1 max-h-72 w-64 overflow-y-auto rounded-lg border border-neutral-200 dark:border-neutral-700 bg-surface-raised shadow-lg z-10">
+        <div className="absolute bottom-full right-0 mb-1 max-h-72 w-64 overflow-y-auto rounded-lg border border-neutral-200 dark:border-neutral-700 bg-surface-raised shadow-lg z-40">
           {(['Female', 'Male', 'Other'] as const).map(
             (group) =>
               grouped[group].length > 0 && (

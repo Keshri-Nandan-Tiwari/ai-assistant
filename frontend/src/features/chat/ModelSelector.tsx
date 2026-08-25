@@ -48,7 +48,7 @@ export default function ModelSelector({ value, onChange }: { value: string; onCh
       </button>
 
       {open && (
-        <div className="absolute left-0 top-full mt-1 w-64 bg-surface-raised border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-lg py-1.5 z-20 animate-fadeIn">
+        <div className="absolute left-0 top-full mt-1 w-64 bg-surface-raised border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-lg z-40 py-1.5 animate-fadeIn">
           {!providerConfigured && (
             <p className="px-3 py-2 text-xs text-neutral-400">
               No AI provider configured. Set OPENAI_API_KEY and/or ANTHROPIC_API_KEY in the backend .env file.
